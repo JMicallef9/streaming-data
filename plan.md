@@ -37,7 +37,8 @@ Data should not be persisted in the message broker longer than three days. - I t
 
 functions:
 make call to Guardian API and retrieve article
-
+convert to correct JSON format
+upload to AWS SQS
 
 
 
