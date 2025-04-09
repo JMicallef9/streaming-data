@@ -81,7 +81,11 @@ class TestRetrieveArticles:
         assert articles[1]['webTitle'] == "Turkmenistan moves towards plugging massive methane leaks"
         assert articles[1]['webUrl'] == "https://www.theguardian.com/environment/2023/jun/13/turkmenistan-moves-towards-plugging-massive-methane-leaks"
 
-        
+    def test_returns_empty_list_if_invalid_query(self):
+        """Checks for an empty list if the query produces no results."""
+        articles = retrieve_articles("qqqsdfgad")
+
+        assert not articles
 
 
     
