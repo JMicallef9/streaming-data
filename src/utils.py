@@ -20,7 +20,7 @@ def make_get_request():
     return {"status_code": response.status_code, "response_body": response.json()}
     
 
-def retrieve_articles(query):
+def retrieve_articles(query, date=None):
     """
     Makes a GET request to The Guardian API using a given query and returns a list of relevant articles.
     
@@ -33,7 +33,7 @@ def retrieve_articles(query):
 
     api_key = os.getenv("API_KEY")
 
-    url = f'https://content.guardianapis.com/search?q={query}&api-key={api_key}'
+    url = f'https://content.guardianapis.com/search?q={query}&order-by=newest&api-key={api_key}'
 
     response = requests.get(url)
 
@@ -53,5 +53,3 @@ def retrieve_articles(query):
 # https://content.guardianapis.com/search?q=debate&tag=politics/politics&from-date=2014-01-01&api-key=test
 
 
-
-# {"response":{"status":"ok","userTier":"developer","total":2278,"startIndex":1,"pageSize":10,"currentPage":1,"pages":228,"orderBy":"relevance","results":[{"id":"technology/2025/mar/07/trump-crypto-leaders-meeting","type":"article","sectionId":"technology","sectionName":"Technology","webPublicationDate":"2025-03-07T18:09:39Z","webTitle":"Trump hosts crypto leaders after creating strategic reserve of bitcoin","webUrl":"https://www.theguardian.com/technology/2025/mar/07/trump-crypto-leaders-meeting","apiUrl":"https://content.guardianapis.com/technology/2025/mar/07/trump-crypto-leaders-meeting","isHosted":false,"pillarId":"pillar/news","pillarName":"News"},///

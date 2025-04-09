@@ -4,6 +4,7 @@ import json
 import os
 import re
 import pytest
+from datetime import datetime
 
 
 @pytest.fixture
@@ -87,7 +88,21 @@ class TestRetrieveArticles:
 
         assert not articles
 
+    def test_returns_most_recent_articles_first(self):
+        """Ensures that the most recent articles are displayed first."""
+        articles = retrieve_articles("turkmenistan")
 
+        dates = [datetime.strptime(article['webPublicationDate'], "%Y-%m-%dT%H:%M:%SZ") for article in articles]
+        sorted_dates = sorted(dates, reverse=True)
+
+        assert dates == sorted_dates
+    
+    def test_results_filtered_by_date_if_specified(self):
+        """Ensures that date_from parameter is used to filter results."""
+
+
+        # use magcon as search term - should filter out 2015 and only give 2019
+        # use machine learning as search term - checking multiple word search terms
     
 
 
