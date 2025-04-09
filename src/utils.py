@@ -36,9 +36,12 @@ def retrieve_articles(query, from_date=None):
     url = 'https://content.guardianapis.com/search'
     params = {'q': query, 'api-key': api_key, 'from-date': from_date, 'order-by': 'newest'} 
 
-    response = requests.get(url, params=params)
+    response = requests.get(url, params=params).json()['response']
 
-    result = response.json()['response']['results']
+    result = response.get('results')
+
+    if not isinstance(result, list):
+        raise ValueError('Invalid date format. Please use a valid ISO format e.g. "2016-01-01" or "2016"')
 
     articles = []
 
@@ -47,10 +50,3 @@ def retrieve_articles(query, from_date=None):
         articles.append(updated_item)
     
     return articles
-
-
-
-# https://content.guardianapis.com/search?q=debates
-# https://content.guardianapis.com/search?q=debate&tag=politics/politics&from-date=2014-01-01&api-key=test
-
-

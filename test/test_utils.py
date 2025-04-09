@@ -103,17 +103,23 @@ class TestRetrieveArticles:
         all_articles = retrieve_articles("magcon")
 
         filtered_articles = retrieve_articles("magcon", '2016-01-01')
+        alternative_format = retrieve_articles("magcon", '2016')
 
         assert all_articles != filtered_articles
+        assert all_articles != alternative_format
         assert len(all_articles) > len(filtered_articles)
+        assert len(all_articles) > len(alternative_format)
+    
+
+    def test_error_message_received_if_invalid_date_format_used(self):
+        """Prints error message if user provides invalid date format."""
+
+        with pytest.raises(ValueError) as err:
+            retrieve_articles("magcon", '201601')
+        assert str(err.value) == 'Invalid date format. Please use a valid ISO format e.g. "2016-01-01" or "2016"'
 
 
-
-
-        # what if no query given??? - error
-
-        # invalid date format given by user - error
-        # use machine learning as search term - checking multiple word search terms
+    #     # use machine learning as search term - checking multiple word search terms
     
 
 
