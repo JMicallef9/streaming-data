@@ -20,7 +20,7 @@ def make_get_request():
     return {"status_code": response.status_code, "response_body": response.json()}
     
 
-def retrieve_articles(query, date=None):
+def retrieve_articles(query, from_date=None):
     """
     Makes a GET request to The Guardian API using a given query and returns a list of relevant articles.
     
@@ -33,9 +33,10 @@ def retrieve_articles(query, date=None):
 
     api_key = os.getenv("API_KEY")
 
-    url = f'https://content.guardianapis.com/search?q={query}&order-by=newest&api-key={api_key}'
+    url = 'https://content.guardianapis.com/search'
+    params = {'q': query, 'api-key': api_key, 'from-date': from_date, 'order-by': 'newest'} 
 
-    response = requests.get(url)
+    response = requests.get(url, params=params)
 
     result = response.json()['response']['results']
 

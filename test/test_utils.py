@@ -100,8 +100,19 @@ class TestRetrieveArticles:
     def test_results_filtered_by_date_if_specified(self):
         """Ensures that date_from parameter is used to filter results."""
 
+        all_articles = retrieve_articles("magcon")
 
-        # use magcon as search term - should filter out 2015 and only give 2019
+        filtered_articles = retrieve_articles("magcon", '2016-01-01')
+
+        assert all_articles != filtered_articles
+        assert len(all_articles) > len(filtered_articles)
+
+
+
+
+        # what if no query given??? - error
+
+        # invalid date format given by user - error
         # use machine learning as search term - checking multiple word search terms
     
 
