@@ -37,9 +37,15 @@ def retrieve_articles(query):
 
     response = requests.get(url)
 
-    result = json.dumps(response.json(), indent=4)
+    result = response.json()['response']['results']
 
-    return result
+    articles = []
+
+    for item in result:
+        updated_item = {"webPublicationDate": item['webPublicationDate'], "webTitle": item['webTitle'], "webUrl": item['webUrl']}
+        articles.append(updated_item)
+    
+    return articles
 
 
 
