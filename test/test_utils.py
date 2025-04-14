@@ -131,11 +131,11 @@ class TestRetrieveArticles:
         """Ensures that an error is raised if the API key in the environment is invalid."""
         with pytest.raises(ValueError) as err:
             retrieve_articles("test")
-        assert str(err.value) == 'Request failed. API key is invalid or does not exist.'
+        assert str(err.value) == 'Request failed. API key is invalid.'
     
     @patch.dict(os.environ, {}, clear=True)
     def test_error_raised_if_no_api_key_provided(self):
         """Ensures that an error is raised if there is no API key set in the envionment."""
         with pytest.raises(ValueError) as err:
             retrieve_articles("test")
-        assert str(err.value) == 'Request failed. API key is invalid or does not exist.'
+        assert str(err.value) == 'Request failed. API key has not been set.'
