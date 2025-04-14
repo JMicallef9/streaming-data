@@ -36,7 +36,12 @@ def retrieve_articles(query, from_date=None):
     url = 'https://content.guardianapis.com/search'
     params = {'q': query, 'api-key': api_key, 'from-date': from_date, 'order-by': 'newest'} 
 
-    response = requests.get(url, params=params).json()['response']
+    response_body = requests.get(url, params=params).json()
+    
+    response = response_body.get('response')
+
+    if not response:
+        raise ValueError('Request failed. API key is invalid or does not exist.')
 
     result = response.get('results')
 
