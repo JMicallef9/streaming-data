@@ -9,7 +9,7 @@ from datetime import datetime
 
 @pytest.fixture
 def mock_get_request():
-    """Creates a test response body using a specific query."""
+    """Creates a test response body."""
     with patch("requests.get") as mock_get:
         mock_response = Mock()
         mock_response.json.return_value = {"response":{"status":"ok","userTier":"developer","total":926,"startIndex":1,"pageSize":10,"currentPage":1,"pages":93,"orderBy":"relevance","results":[{"id":"world/2025/apr/04/eu-urged-to-put-human-rights-centre-stage-at-first-central-asia-summit","type":"article","sectionId":"world","sectionName":"World news","webPublicationDate":"2025-04-04T02:00:39Z","webTitle":"EU urged to put human rights centre stage at first central Asia summit","webUrl":"https://www.theguardian.com/world/2025/apr/04/eu-urged-to-put-human-rights-centre-stage-at-first-central-asia-summit","apiUrl":"https://content.guardianapis.com/world/2025/apr/04/eu-urged-to-put-human-rights-centre-stage-at-first-central-asia-summit","isHosted":False,"pillarId":"pillar/news","pillarName":"News"},{"id":"environment/2023/jun/13/turkmenistan-moves-towards-plugging-massive-methane-leaks","type":"article","sectionId":"environment","sectionName":"Environment","webPublicationDate":"2023-06-13T10:55:32Z","webTitle":"Turkmenistan moves towards plugging massive methane leaks","webUrl":"https://www.theguardian.com/environment/2023/jun/13/turkmenistan-moves-towards-plugging-massive-methane-leaks","apiUrl":"https://content.guardianapis.com/environment/2023/jun/13/turkmenistan-moves-towards-plugging-massive-methane-leaks","isHosted":False,"pillarId":"pillar/news","pillarName":"News"}]}}
@@ -117,9 +117,25 @@ class TestRetrieveArticles:
         with pytest.raises(ValueError) as err:
             retrieve_articles("magcon", '201601')
         assert str(err.value) == 'Invalid date format. Please use a valid ISO format e.g. "2016-01-01" or "2016"'
-
-
-    #     # use machine learning as search term - checking multiple word search terms
     
+    def test_handles_multiword_search_terms(self):
+        """Ensures that the function handles search terms of multiple words."""
+        output = retrieve_articles("machine learning")
+        assert len(output) == 10
 
+        for article in output:
+            assert list(article.keys()) == ['webPublicationDate', 'webTitle', 'webUrl']
 
+    @patch.dict(os.environ, {"API_KEY": "invalid-key"})
+    def test_error_raised_if_api_key_is_invalid(self):
+        """Ensures that an error is raised if the API key in the environment is invalid."""
+        with pytest.raises(ValueError) as err:
+            retrieve_articles("test")
+        assert str(err.value) == 'Request failed. API key is invalid or does not exist.'
+    
+    @patch.dict(os.environ, {}, clear=True)
+    def test_error_raised_if_no_api_key_provided(self):
+        """Ensures that an error is raised if there is no API key set in the envionment."""
+        with pytest.raises(ValueError) as err:
+            retrieve_articles("test")
+        assert str(err.value) == 'Request failed. API key is invalid or does not exist.'
