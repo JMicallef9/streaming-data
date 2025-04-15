@@ -5,6 +5,7 @@ import os
 import re
 import pytest
 from datetime import datetime
+import requests
 
 
 @pytest.fixture
@@ -139,3 +140,11 @@ class TestRetrieveArticles:
         with pytest.raises(ValueError) as err:
             retrieve_articles("test")
         assert str(err.value) == 'Request failed. API key has not been set.'
+    
+    def test_handles_timeout_error(self):
+        with patch("requests.get") as mock_get:
+            mock_response = Mock()
+            mock_get.side_effect = requests.exceptions.HTTPError
+            with pytest.raises(requests.exceptions.HTTPError) as err:
+                retrieve_articles("test")
+            assert str(err.value) == 'HTTP request failed.'
