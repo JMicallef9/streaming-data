@@ -1,4 +1,4 @@
-from src.utils import retrieve_articles, make_get_request
+from src.utils import retrieve_articles, make_get_request, publish_data_to_message_broker
 from unittest.mock import patch, Mock
 import json
 import os
@@ -7,6 +7,7 @@ import pytest
 from datetime import datetime
 import requests
 from moto import mock_aws
+import boto3
 
 
 @pytest.fixture
@@ -18,6 +19,14 @@ def mock_get_request():
         mock_get.return_value = mock_response
         yield mock_get
 
+
+@pytest.fixture
+def sqs_mock():
+    with mock_aws():
+        sqs = boto3.client('sqs', region_name='eu-west-2')
+        queue = sqs.create_queue(QueueName="guardian_content")
+        url = queue["QueueUrl"]
+        yield [sqs, url]
 
 class TestMakeGetRequest:
 
@@ -150,15 +159,29 @@ class TestRetrieveArticles:
                 retrieve_articles("test")
             assert str(err.value) == 'HTTP request failed.'
 
-class PublishDataToMessageBroker:
+class TestPublishDataToMessageBroker:
     """Tests for the publish_data_to_message_broker function."""
 
-    def test_publishes_single_message_to_message_broker(self):
+    def test_publishes_single_message_to_message_broker(self, sqs_mock):
         """Checks whether a single dictionary is successfully published to AWS SQS."""
         test_data = [{"webPublicationDate": "2023-11-21T11:11:31Z",
                       "webTitle": "Who said what: using machine learning to correctly attribute quotes",
                       "webUrl": "https://www.theguardian.com/info/2023/nov/21/who-said-what-using-machine-learning-to-correctly-attribute-quotes"}]
         broker_reference = "guardian_content"
+
+        publish_data_to_message_broker(test_data, broker_reference)
+
+        response = sqs_mock[0].receive_message(QueueUrl=sqs_mock[1])
+
+        message = response['Messages'][0]['Body']
+
+        extracted_data = json.loads(message)
+
+        assert test_data[0] == extracted_data
+
+
+
+        
 
 
 
