@@ -24,9 +24,8 @@ def mock_get_request():
 def sqs_mock():
     with mock_aws():
         sqs = boto3.client('sqs', region_name='eu-west-2')
-        queue = sqs.create_queue(QueueName="guardian_content")
-        url = queue["QueueUrl"]
-        yield [sqs, url]
+        sqs.create_queue(QueueName="guardian_content")
+        yield sqs
 
 class TestMakeGetRequest:
 
@@ -171,7 +170,9 @@ class TestPublishDataToMessageBroker:
 
         publish_data_to_message_broker(test_data, broker_reference)
 
-        response = sqs_mock[0].receive_message(QueueUrl=sqs_mock[1])
+        queue_url = sqs_mock.get_queue_url(QueueName=broker_reference)['QueueUrl']
+
+        response = sqs_mock.receive_message(QueueUrl=queue_url)
 
         message = response['Messages'][0]['Body']
 

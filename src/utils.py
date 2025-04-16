@@ -77,4 +77,11 @@ def publish_data_to_message_broker(data, broker_ref):
         None.
     """
 
-    client = boto3.client('sqs')
+    client = boto3.client('sqs', region_name=os.getenv("AWS_REGION"))
+
+    queue_url = client.get_queue_url(QueueName=broker_ref)['QueueUrl']
+
+    message_json = json.dumps(data[0])
+
+    client.send_message(QueueUrl=queue_url, MessageBody=message_json)
+
