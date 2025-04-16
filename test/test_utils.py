@@ -6,6 +6,7 @@ import re
 import pytest
 from datetime import datetime
 import requests
+from moto import mock_aws
 
 
 @pytest.fixture
@@ -148,3 +149,17 @@ class TestRetrieveArticles:
             with pytest.raises(requests.exceptions.HTTPError) as err:
                 retrieve_articles("test")
             assert str(err.value) == 'HTTP request failed.'
+
+class PublishDataToMessageBroker:
+    """Tests for the publish_data_to_message_broker function."""
+
+    def test_publishes_single_message_to_message_broker(self):
+        """Checks whether a single dictionary is successfully published to AWS SQS."""
+        test_data = [{"webPublicationDate": "2023-11-21T11:11:31Z",
+                      "webTitle": "Who said what: using machine learning to correctly attribute quotes",
+                      "webUrl": "https://www.theguardian.com/info/2023/nov/21/who-said-what-using-machine-learning-to-correctly-attribute-quotes"}]
+        broker_reference = "guardian_content"
+
+
+
+        

@@ -1,6 +1,8 @@
 import requests
 import json
 import os
+import boto3
+
 
 
 def make_get_request():
@@ -62,3 +64,17 @@ def retrieve_articles(query, from_date=None):
         articles.append(updated_item)
     
     return articles
+
+def publish_data_to_message_broker(data, broker_ref):
+    """
+    Publishes data to a message broker hosted on AWS SQS.
+
+    Args:
+        data (list): A list of dictionaries containing information about articles from The Guardian's API.
+        broker_ref (str): A reference to a message broker on AWS SQS.
+    
+    Returns:
+        None.
+    """
+
+    client = boto3.client('sqs')
