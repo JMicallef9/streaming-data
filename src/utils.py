@@ -87,8 +87,11 @@ def publish_data_to_message_broker(data, broker_ref):
             client.create_queue(QueueName=broker_ref)
             queue_url = client.get_queue_url(QueueName=broker_ref)['QueueUrl']
 
-    articles = [
-        {'Id': str(i), "MessageBody": json.dumps(item)} for i, item in enumerate(data)]
+    if isinstance(data, list) and all(isinstance(item, dict) for item in data):
+        articles = [
+            {'Id': str(i), "MessageBody": json.dumps(item)} for i, item in enumerate(data)]
 
-    client.send_message_batch(QueueUrl=queue_url, Entries=articles)
+        client.send_message_batch(QueueUrl=queue_url, Entries=articles)
+    else:
+        raise ValueError("Invalid data type. Input must be a list of dictionaries.")
 
