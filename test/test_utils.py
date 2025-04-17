@@ -158,6 +158,13 @@ class TestRetrieveArticles:
                 retrieve_articles("test")
             assert str(err.value) == 'HTTP request failed.'
 
+@pytest.fixture
+def test_data():
+    test_data = [{"webPublicationDate": "2023-11-21T11:11:31Z",
+                      "webTitle": "Who said what: using machine learning to correctly attribute quotes",
+                      "webUrl": "https://www.theguardian.com/info/2023/nov/21/who-said-what-using-machine-learning-to-correctly-attribute-quotes"}, {"webPublicationDate":"2025-04-04T02:00:39Z", "webTitle":"EU urged to put human rights centre stage at first central Asia summit","webUrl":"https://www.theguardian.com/world/2025/apr/04/eu-urged-to-put-human-rights-centre-stage-at-first-central-asia-summit"}]
+    yield test_data
+
 class TestPublishDataToMessageBroker:
     """Tests for the publish_data_to_message_broker function."""
 
@@ -180,10 +187,9 @@ class TestPublishDataToMessageBroker:
 
         assert test_data[0] == extracted_data
     
-    def test_publishes_multiple_messages_to_message_broker(self, sqs_mock):
-        test_data = [{"webPublicationDate": "2023-11-21T11:11:31Z",
-                      "webTitle": "Who said what: using machine learning to correctly attribute quotes",
-                      "webUrl": "https://www.theguardian.com/info/2023/nov/21/who-said-what-using-machine-learning-to-correctly-attribute-quotes"}, {"webPublicationDate":"2025-04-04T02:00:39Z", "webTitle":"EU urged to put human rights centre stage at first central Asia summit","webUrl":"https://www.theguardian.com/world/2025/apr/04/eu-urged-to-put-human-rights-centre-stage-at-first-central-asia-summit"}]
+    def test_publishes_multiple_messages_to_message_broker(self, sqs_mock, test_data):
+        """Checks whether multiple dictionaries are successfully published to AWS SQS."""
+
         broker_reference = "guardian_content"
 
         publish_data_to_message_broker(test_data, broker_reference)
@@ -196,6 +202,53 @@ class TestPublishDataToMessageBroker:
 
         for item in test_data:
             assert item in received_messages
+        
+
+    def test_publishes_new_messages_to_existing_queue(self, sqs_mock, test_data):
+        """Checks whether new messages are successfully published to a queue that already contains messages."""
+
+        broker_reference = "guardian_content"
+
+        publish_data_to_message_broker(test_data, broker_reference)
+
+        new_data = [{"webPublicationDate": "2021-11-21T11:11:31Z",
+                      "webTitle": "new: using machine learning to correctly attribute quotes",
+                      "webUrl": "https://www.theguardian.com/info/2021/nov/21/who-said-what-using-machine-learning-to-correctly-attribute-quotes"}, {"webPublicationDate":"2021-04-04T02:00:39Z", "webTitle":"new EU urged to put human rights centre stage at first central Asia summit","webUrl":"https://www.theguardian.com/world/2021/apr/04/eu-urged-to-put-human-rights-centre-stage-at-first-central-asia-summit"}]
+
+        publish_data_to_message_broker(new_data, broker_reference)
+
+        queue_url = sqs_mock.get_queue_url(QueueName=broker_reference)['QueueUrl']
+
+        response = sqs_mock.receive_message(QueueUrl=queue_url, MaxNumberOfMessages=4)
+
+        received_messages = [json.loads(message['Body']) for message in response['Messages']]
+
+        for item in received_messages:
+            assert item in test_data or item in new_data
+
+
+    def test_publishes_messages_to_new_queue(self, sqs_mock, test_data):
+        """Checks whether messages are successfully published to a queue that does not yet exist."""
+
+        broker_reference = "new_content"
+
+        publish_data_to_message_broker(test_data, broker_reference)
+
+        queue_url = sqs_mock.get_queue_url(QueueName=broker_reference)['QueueUrl']
+
+        response = sqs_mock.receive_message(QueueUrl=queue_url, MaxNumberOfMessages=2)
+
+        received_messages = [json.loads(message['Body']) for message in response['Messages']]
+
+        for item in received_messages:
+            assert item in test_data
+
+
+
+
+    # test for publishing multiple messages to queue that already contains messages
+    # test what happens if given queue doesn't exist - create one?
+    # 
 
 
 

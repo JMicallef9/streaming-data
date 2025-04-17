@@ -2,6 +2,7 @@ import requests
 import json
 import os
 import boto3
+import botocore
 
 
 
@@ -79,7 +80,12 @@ def publish_data_to_message_broker(data, broker_ref):
 
     client = boto3.client('sqs', region_name=os.getenv("AWS_REGION"))
 
-    queue_url = client.get_queue_url(QueueName=broker_ref)['QueueUrl']
+    try:
+        queue_url = client.get_queue_url(QueueName=broker_ref)['QueueUrl']
+    except botocore.exceptions.ClientError as e:
+        if e.response['Error']['Code'] == 'AWS.SimpleQueueService.NonExistentQueue':
+            client.create_queue(QueueName=broker_ref)
+            queue_url = client.get_queue_url(QueueName=broker_ref)['QueueUrl']
 
     articles = [
         {'Id': str(i), "MessageBody": json.dumps(item)} for i, item in enumerate(data)]
