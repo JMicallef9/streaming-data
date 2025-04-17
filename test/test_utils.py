@@ -22,7 +22,7 @@ def mock_get_request():
 
 @pytest.fixture
 def sqs_mock():
-    """Creates a test response body."""
+    """Creates a mock SQS client."""
 
     with mock_aws():
         sqs = boto3.client('sqs', region_name='eu-west-2')
@@ -162,6 +162,7 @@ class TestRetrieveArticles:
 
 @pytest.fixture
 def test_data():
+    """Creates dummy data."""
     test_data = [{"webPublicationDate": "2023-11-21T11:11:31Z",
                       "webTitle": "Who said what: using machine learning to correctly attribute quotes",
                       "webUrl": "https://www.theguardian.com/info/2023/nov/21/who-said-what-using-machine-learning-to-correctly-attribute-quotes"}, {"webPublicationDate":"2025-04-04T02:00:39Z", "webTitle":"EU urged to put human rights centre stage at first central Asia summit","webUrl":"https://www.theguardian.com/world/2025/apr/04/eu-urged-to-put-human-rights-centre-stage-at-first-central-asia-summit"}]
@@ -169,6 +170,7 @@ def test_data():
 
 @pytest.fixture
 def aws_region():
+    """Sets AWS region as environment variable."""
     with patch.dict(os.environ, {'AWS_REGION': 'eu-west-2'}):
         yield
 
