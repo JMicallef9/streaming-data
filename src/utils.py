@@ -77,7 +77,9 @@ def publish_data_to_message_broker(data, broker_ref):
     Returns:
         None.
     """
-
+    if not os.getenv("AWS_REGION"):
+        raise ValueError('Request failed. AWS region has not been specified.')
+    
     client = boto3.client('sqs', region_name=os.getenv("AWS_REGION"))
 
     try:
@@ -87,7 +89,7 @@ def publish_data_to_message_broker(data, broker_ref):
             client.create_queue(QueueName=broker_ref)
             queue_url = client.get_queue_url(QueueName=broker_ref)['QueueUrl']
 
-    if isinstance(data, list) and all(isinstance(item, dict) for item in data):
+    if data and isinstance(data, list) and all(isinstance(item, dict) for item in data):
         articles = [
             {'Id': str(i), "MessageBody": json.dumps(item)} for i, item in enumerate(data)]
 
