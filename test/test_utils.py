@@ -179,6 +179,24 @@ class TestPublishDataToMessageBroker:
         extracted_data = json.loads(message)
 
         assert test_data[0] == extracted_data
+    
+    def test_publishes_multiple_messages_to_message_broker(self, sqs_mock):
+        test_data = [{"webPublicationDate": "2023-11-21T11:11:31Z",
+                      "webTitle": "Who said what: using machine learning to correctly attribute quotes",
+                      "webUrl": "https://www.theguardian.com/info/2023/nov/21/who-said-what-using-machine-learning-to-correctly-attribute-quotes"}, {"webPublicationDate":"2025-04-04T02:00:39Z", "webTitle":"EU urged to put human rights centre stage at first central Asia summit","webUrl":"https://www.theguardian.com/world/2025/apr/04/eu-urged-to-put-human-rights-centre-stage-at-first-central-asia-summit"}]
+        broker_reference = "guardian_content"
+
+        publish_data_to_message_broker(test_data, broker_reference)
+
+        queue_url = sqs_mock.get_queue_url(QueueName=broker_reference)['QueueUrl']
+
+        response = sqs_mock.receive_message(QueueUrl=queue_url, MaxNumberOfMessages=2)
+
+        received_messages = [json.loads(message['Body']) for message in response['Messages']]
+
+        for item in test_data:
+            assert item in received_messages
+
 
 
 

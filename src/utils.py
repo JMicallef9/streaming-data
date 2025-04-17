@@ -81,7 +81,8 @@ def publish_data_to_message_broker(data, broker_ref):
 
     queue_url = client.get_queue_url(QueueName=broker_ref)['QueueUrl']
 
-    message_json = json.dumps(data[0])
+    articles = [
+        {'Id': str(i), "MessageBody": json.dumps(item)} for i, item in enumerate(data)]
 
-    client.send_message(QueueUrl=queue_url, MessageBody=message_json)
+    client.send_message_batch(QueueUrl=queue_url, Entries=articles)
 
