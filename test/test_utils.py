@@ -246,13 +246,6 @@ class TestPublishDataToMessageBroker:
 
 
 
-    # test for publishing multiple messages to queue that already contains messages
-    # test what happens if given queue doesn't exist - create one?
-    # 
-
-
-
-
         
 
 
