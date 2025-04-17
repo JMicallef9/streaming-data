@@ -22,6 +22,8 @@ def mock_get_request():
 
 @pytest.fixture
 def sqs_mock():
+    """Creates a test response body."""
+
     with mock_aws():
         sqs = boto3.client('sqs', region_name='eu-west-2')
         sqs.create_queue(QueueName="guardian_content")
@@ -165,10 +167,15 @@ def test_data():
                       "webUrl": "https://www.theguardian.com/info/2023/nov/21/who-said-what-using-machine-learning-to-correctly-attribute-quotes"}, {"webPublicationDate":"2025-04-04T02:00:39Z", "webTitle":"EU urged to put human rights centre stage at first central Asia summit","webUrl":"https://www.theguardian.com/world/2025/apr/04/eu-urged-to-put-human-rights-centre-stage-at-first-central-asia-summit"}]
     yield test_data
 
+@pytest.fixture
+def aws_region():
+    with patch.dict(os.environ, {'AWS_REGION': 'eu-west-2'}):
+        yield
+
 class TestPublishDataToMessageBroker:
     """Tests for the publish_data_to_message_broker function."""
 
-    def test_publishes_single_message_to_message_broker(self, sqs_mock):
+    def test_publishes_single_message_to_message_broker(self, sqs_mock, aws_region):
         """Checks whether a single dictionary is successfully published to AWS SQS."""
         test_data = [{"webPublicationDate": "2023-11-21T11:11:31Z",
                       "webTitle": "Who said what: using machine learning to correctly attribute quotes",
@@ -187,7 +194,7 @@ class TestPublishDataToMessageBroker:
 
         assert test_data[0] == extracted_data
     
-    def test_publishes_multiple_messages_to_message_broker(self, sqs_mock, test_data):
+    def test_publishes_multiple_messages_to_message_broker(self, sqs_mock, test_data, aws_region):
         """Checks whether multiple dictionaries are successfully published to AWS SQS."""
 
         broker_reference = "guardian_content"
@@ -204,7 +211,7 @@ class TestPublishDataToMessageBroker:
             assert item in received_messages
         
 
-    def test_publishes_new_messages_to_existing_queue(self, sqs_mock, test_data):
+    def test_publishes_new_messages_to_existing_queue(self, sqs_mock, test_data, aws_region):
         """Checks whether new messages are successfully published to a queue that already contains messages."""
 
         broker_reference = "guardian_content"
@@ -227,7 +234,7 @@ class TestPublishDataToMessageBroker:
             assert item in test_data or item in new_data
 
 
-    def test_publishes_messages_to_new_queue(self, sqs_mock, test_data):
+    def test_publishes_messages_to_new_queue(self, sqs_mock, test_data, aws_region):
         """Checks whether messages are successfully published to a queue that does not yet exist."""
 
         broker_reference = "new_content"
@@ -243,17 +250,29 @@ class TestPublishDataToMessageBroker:
         for item in received_messages:
             assert item in test_data
 
-    def test_error_raised_if_invalid_input(self, sqs_mock):
+    def test_error_raised_if_invalid_input(self, sqs_mock, aws_region):
         """Checks that an error is raised if data has incorrect data type."""
         broker_reference = "new_content"
         test_data = [['PublicationDate', 'url']]
         with pytest.raises(ValueError) as err:
             publish_data_to_message_broker(test_data, broker_reference)
         assert str(err.value) == 'Invalid data type. Input must be a list of dictionaries.'
-        
+    
+    def test_error_raised_if_empty_list_provided(self, sqs_mock, aws_region):
+        """Checks that an error is raised if an empty list is given."""
+        broker_reference = "new_content"
+        test_data = []
+        with pytest.raises(ValueError) as err:
+            publish_data_to_message_broker(test_data, broker_reference)
+        assert str(err.value) == 'Invalid data type. Input must be a list of dictionaries.'
+    
+    def test_error_raised_if_region_not_set_in_environment(self, sqs_mock, test_data):
+        """Checks that an error is raised if region not set as environment variable."""
+        broker_reference = "new_content"
 
-
-
+        with pytest.raises(ValueError) as err:
+            publish_data_to_message_broker(test_data, broker_reference)
+        assert str(err.value) == 'Request failed. AWS region has not been specified.'
         
 
 
