@@ -243,6 +243,14 @@ class TestPublishDataToMessageBroker:
         for item in received_messages:
             assert item in test_data
 
+    def test_error_raised_if_invalid_input(self, sqs_mock):
+        """Checks that an error is raised if data has incorrect data type."""
+        broker_reference = "new_content"
+        test_data = [['PublicationDate', 'url']]
+        with pytest.raises(ValueError) as err:
+            publish_data_to_message_broker(test_data, broker_reference)
+        assert str(err.value) == 'Invalid data type. Input must be a list of dictionaries.'
+        
 
 
 
