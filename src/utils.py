@@ -75,7 +75,7 @@ def publish_data_to_message_broker(data, broker_ref):
         broker_ref (str): A reference to a message broker on AWS SQS.
     
     Returns:
-        None.
+        int: The number of articles successfully published.
     """
     if not os.getenv("AWS_REGION"):
         raise ValueError('Request failed. AWS region has not been specified.')
@@ -89,11 +89,17 @@ def publish_data_to_message_broker(data, broker_ref):
             client.create_queue(QueueName=broker_ref)
             queue_url = client.get_queue_url(QueueName=broker_ref)['QueueUrl']
 
-    if data and isinstance(data, list) and all(isinstance(item, dict) for item in data):
+    if not data:
+        return 0
+
+    if isinstance(data, list) and all(isinstance(item, dict) for item in data):
         articles = [
             {'Id': str(i), "MessageBody": json.dumps(item)} for i, item in enumerate(data)]
 
-        client.send_message_batch(QueueUrl=queue_url, Entries=articles)
+        response = client.send_message_batch(QueueUrl=queue_url, Entries=articles)
+        count = len(response.get('Successful'))
+        return count
+
     else:
         raise ValueError("Invalid data type. Input must be a list of dictionaries.")
 
