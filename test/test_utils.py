@@ -260,14 +260,6 @@ class TestPublishDataToMessageBroker:
             publish_data_to_message_broker(test_data, broker_reference)
         assert str(err.value) == 'Invalid data type. Input must be a list of dictionaries.'
     
-    def test_error_raised_if_empty_list_provided(self, sqs_mock, aws_region):
-        """Checks that an error is raised if an empty list is given."""
-        broker_reference = "new_content"
-        test_data = []
-        with pytest.raises(ValueError) as err:
-            publish_data_to_message_broker(test_data, broker_reference)
-        assert str(err.value) == 'Invalid data type. Input must be a list of dictionaries.'
-    
     def test_error_raised_if_region_not_set_in_environment(self, sqs_mock, test_data):
         """Checks that an error is raised if region not set as environment variable."""
         broker_reference = "new_content"
@@ -275,6 +267,18 @@ class TestPublishDataToMessageBroker:
         with pytest.raises(ValueError) as err:
             publish_data_to_message_broker(test_data, broker_reference)
         assert str(err.value) == 'Request failed. AWS region has not been specified.'
+    
+    def test_returns_number_of_articles_published(self, sqs_mock, test_data, aws_region):
+        broker_reference = "new_content"
+
+        assert publish_data_to_message_broker(test_data, broker_reference) == 2
+    
+    def test_returns_zero_if_no_articles_published(self, sqs_mock, aws_region):
+        broker_reference = "new_content"
+        test_data = []
+        assert publish_data_to_message_broker(test_data, broker_reference) == 0
+
+
         
 
 
