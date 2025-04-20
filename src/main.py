@@ -1,4 +1,4 @@
-from utils import retrieve_articles, publish_data_to_message_broker
+from src.utils import retrieve_articles, publish_data_to_message_broker
 
 def lambda_handler(event, context):
     """
@@ -21,11 +21,14 @@ def lambda_handler(event, context):
 
     if from_date:
         articles = retrieve_articles(query, from_date)
-        publish_data_to_message_broker(articles, broker_ref)
+        count = publish_data_to_message_broker(articles, broker_ref)
     else:
         articles = retrieve_articles(query)
-        publish_data_to_message_broker(articles, broker_ref)
+        count = publish_data_to_message_broker(articles, broker_ref)
     
+    return {'message': f'{count} articles published to {broker_ref}.'}
+
+
 
     
 
