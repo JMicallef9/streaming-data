@@ -269,11 +269,15 @@ class TestPublishDataToMessageBroker:
         assert str(err.value) == 'Request failed. AWS region has not been specified.'
     
     def test_returns_number_of_articles_published(self, sqs_mock, test_data, aws_region):
+        """Ensures that the function returns the number of articles published."""
+
         broker_reference = "new_content"
 
         assert publish_data_to_message_broker(test_data, broker_reference) == 2
     
     def test_returns_zero_if_no_articles_published(self, sqs_mock, aws_region):
+        """Ensures that the function returns zero if passed an empty list."""
+
         broker_reference = "new_content"
         test_data = []
         assert publish_data_to_message_broker(test_data, broker_reference) == 0
