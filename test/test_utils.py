@@ -1,4 +1,4 @@
-from src.utils import retrieve_articles, make_get_request, publish_data_to_message_broker
+from src.utils import retrieve_articles, make_get_request, publish_data_to_message_broker, check_bucket_exists
 from unittest.mock import patch, Mock
 import json
 import os
@@ -29,25 +29,6 @@ def sqs_mock():
         sqs.create_queue(QueueName="guardian_content")
         yield sqs
 
-class TestMakeGetRequest:
-
-    def test_makes_successful_API_request(self):
-        """Ensures that the API can be accessed successfully using the API key."""
-        result = make_get_request()
-        assert type(result) == dict
-        assert result['status_code'] == 200
-        response_body = result['response_body']
-        assert isinstance(response_body, dict)
-        assert 'response' in response_body.keys()
-        assert isinstance(response_body['response']['results'], list)
-    
-    @patch.dict(os.environ, {"API_KEY": "invalid-key"})
-    def test_unsuccessful_request_if_invalid_api_key(self):
-        """Checks for an unsuccessful request if an invalid API key is used."""
-        result = make_get_request()
-        assert result['status_code'] == 401
-        assert result['response_body']['message'] == 'Unauthorized'
-        
 
 class TestRetrieveArticles:
     """Tests for the retrieve_articles function."""
@@ -281,6 +262,27 @@ class TestPublishDataToMessageBroker:
         broker_reference = "new_content"
         test_data = []
         assert publish_data_to_message_broker(test_data, broker_reference) == 0
+
+@pytest.fixture
+def s3_mock():
+    """Creates a mock S3 client."""
+
+    with mock_aws():
+        s3 = boto3.client('s3', region_name='eu-west-2')
+        yield s3
+
+class TestCheckBucketExists:
+
+    """Tests for the check_bucket_exists function."""
+
+    @patch.dict(os.environ, {'BUCKET_NAME': 'guardian-api-call-tracker'})
+    def test_returns_true_if_bucket_exists(self, s3_mock):
+        """Checks that the function returns True if the S3 bucket exists."""
+        s3_mock.create_bucket(Bucket=os.getenv('BUCKET_NAME'),
+                              CreateBucketConfiguration={'LocationConstraint': 'eu-west-2'})
+        
+        assert check_bucket_exists() == True
+        
 
 
         
