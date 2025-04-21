@@ -6,23 +6,6 @@ import botocore
 
 
 
-def make_get_request():
-    """
-    Makes a GET request to The Guardian API and returns the response body and status code.
-    
-    Args:
-        None
-    
-    Returns:
-        dict: A dictionary containing the response body and status code.
-    """
-    api_key = os.getenv("API_KEY")
-
-    url = f'https://content.guardianapis.com/search?api-key={api_key}'
-    response = requests.get(url)
-    return {"status_code": response.status_code, "response_body": response.json()}
-    
-
 def retrieve_articles(query, from_date=None):
     """
     Makes a GET request to The Guardian API using a given query and returns a list of relevant articles.
@@ -103,3 +86,15 @@ def publish_data_to_message_broker(data, broker_ref):
     else:
         raise ValueError("Invalid data type. Input must be a list of dictionaries.")
 
+
+def check_bucket_exists():
+    pass
+
+
+
+# S3 functions:
+# 1. does S3 bucket exist at all?
+# 2. if no, create one
+# 3. if yes, check how many files are in the subfolder representing today's date
+# 4. if number of files is less than 50, run and create new file
+# 5. if number of files is 50, raise error or don't run
