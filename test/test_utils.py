@@ -1,10 +1,10 @@
-from src.utils import retrieve_articles, publish_data_to_message_broker, check_bucket_exists, create_s3_bucket
+from src.utils import retrieve_articles, publish_data_to_message_broker, check_bucket_exists, create_s3_bucket, check_number_of_files
 from unittest.mock import patch, Mock
 import json
 import os
 import re
 import pytest
-from datetime import datetime
+import datetime
 import requests
 from moto import mock_aws
 import boto3
@@ -372,6 +372,60 @@ class TestCreateS3Bucket:
         with pytest.raises(ValueError) as err:
             create_s3_bucket()
         assert str(err.value) == 'Error: invalid bucket name provided.'
+
+class TestCheckNumberOfFiles:
+    """Tests for the check_number_of_files function."""
+
+    def test_returns_zero_if_no_files_in_s3_bucket(self, s3_mock):
+        """Checks that zero is returned if there are no files in the specified bucket."""
+        s3_mock.create_bucket(Bucket='guardian-api-call-tracker',
+                              CreateBucketConfiguration={'LocationConstraint': 'eu-west-2'})
+        assert check_number_of_files('guardian-api-call-tracker') == 0
+    
+    def test_returns_zero_if_no_valid_folder_exists(self, s3_mock):
+        """Checks that zero is returned if there is no folder for today's date in the S3 bucket."""
+        bucket_name = 'guardian-api-call-tracker'
+        s3_mock.create_bucket(Bucket=bucket_name,
+                              CreateBucketConfiguration={'LocationConstraint': 'eu-west-2'})
+        test_data = json.dumps([{"webPublicationDate": "2023-11-21T11:11:31Z",
+                      "webTitle": "Who said what: using machine learning to correctly attribute quotes",
+                      "webUrl": "https://www.theguardian.com/info/2023/nov/21/who-said-what-using-machine-learning-to-correctly-attribute-quotes"}])
+        s3_mock.put_object(Bucket=bucket_name,
+                           Body=test_data,
+                           Key='filename')
+        assert check_number_of_files(bucket_name) == 0
+    
+    def test_returns_one_if_file_is_located_in_folder_for_today(self, s3_mock):
+        """Checks that the function returns 1 if there is a file saved under today's date."""
+        bucket_name = 'guardian-api-call-tracker'
+        s3_mock.create_bucket(Bucket=bucket_name,
+                              CreateBucketConfiguration={'LocationConstraint': 'eu-west-2'})
+        test_data = json.dumps([{"webPublicationDate": "2023-11-21T11:11:31Z",
+                      "webTitle": "Who said what: using machine learning to correctly attribute quotes",
+                      "webUrl": "https://www.theguardian.com/info/2023/nov/21/who-said-what-using-machine-learning-to-correctly-attribute-quotes"}])
+        date = str(datetime.date.today())
+
+        s3_mock.put_object(Bucket=bucket_name,
+                           Body=test_data,
+                           Key=f'{date}/filename')
+        assert check_number_of_files(bucket_name) == 1
+    
+    def test_returns_correct_number_if_multiple_files_located_in_folder(self, s3_mock):
+        bucket_name = 'guardian-api-call-tracker'
+        s3_mock.create_bucket(Bucket=bucket_name,
+                              CreateBucketConfiguration={'LocationConstraint': 'eu-west-2'})
+        test_data = json.dumps([{"webPublicationDate": "2023-11-21T11:11:31Z",
+                      "webTitle": "Who said what: using machine learning to correctly attribute quotes",
+                      "webUrl": "https://www.theguardian.com/info/2023/nov/21/who-said-what-using-machine-learning-to-correctly-attribute-quotes"}])
+        date = str(datetime.date.today())
+
+        for i in range(20):
+            s3_mock.put_object(Bucket=bucket_name,
+                           Body=test_data,
+                           Key=f'{date}/filename_{i}')
+        assert check_number_of_files(bucket_name) == 20
+
+
 
 
 
