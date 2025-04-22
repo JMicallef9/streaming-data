@@ -23,7 +23,10 @@ def retrieve_articles(query, from_date=None):
         raise ValueError('Request failed. API key has not been set.')
 
     url = 'https://content.guardianapis.com/search'
-    params = {'q': query, 'api-key': api_key, 'from-date': from_date, 'order-by': 'newest'} 
+    params = {'q': query, 'api-key': api_key, 'order-by': 'newest'} 
+
+    if from_date:
+        params['from-date'] = from_date
 
     try:
         response = requests.get(url, params=params)
