@@ -315,6 +315,17 @@ class TestCheckBucketExists:
                               CreateBucketConfiguration={'LocationConstraint': 'eu-west-2'})
         
         assert check_bucket_exists() == True
+    
+    @patch.dict(os.environ, {'BUCKET_NAME': 'guardian-api-call-tracker'})
+    def test_returns_false_if_bucket_does_not_exist(self, s3_mock):
+        """Checks that the function returns False if S3 bucket does not exist."""
+        assert check_bucket_exists() == False
+    
+    def test_returns_error_message_if_bucket_name_not_provided(self, s3_mock):
+        """Checks that an error message is received if bucket name not set in environment."""
+        with pytest.raises(ValueError) as err:
+            check_bucket_exists()
+        assert str(err.value) == "Error: S3 bucket name (BUCKET_NAME) has not been set."
         
 
 
