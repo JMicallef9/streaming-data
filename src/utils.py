@@ -91,6 +91,15 @@ def publish_data_to_message_broker(data, broker_ref):
 
 
 def check_bucket_exists():
+    """
+    Checks whether an S3 bucket exists with a name matching the BUCKET_NAME environment variable.
+    
+    Args:
+        None.
+    
+    Returns:
+        bool: True or False depending on whether the bucket exists.
+    """
     bucket_name = os.getenv('BUCKET_NAME')
 
     client = boto3.client('s3')
@@ -102,6 +111,31 @@ def check_bucket_exists():
         except botocore.exceptions.ClientError:
             return False
     
+    raise ValueError("Error: S3 bucket name (BUCKET_NAME) has not been set.")
+
+def create_s3_bucket():
+    """
+    Creates an S3 bucket with name matching the BUCKET_NAME environment variable.
+    
+    Args:
+        None.
+    
+    Returns:
+        dict: A dictionary containing information about the successfully created bucket.
+    """
+    bucket_name = os.getenv('BUCKET_NAME')
+
+    client = boto3.client('s3')
+
+    if bucket_name:
+        try:
+            client.create_bucket(Bucket=bucket_name,
+                         CreateBucketConfiguration={'LocationConstraint': 'eu-west-2'})
+
+            return {'bucket_name': bucket_name, 'status': 'created'}  
+        except botocore.exceptions.ClientError:
+            raise ValueError("Error: invalid bucket name provided.") 
+
     raise ValueError("Error: S3 bucket name (BUCKET_NAME) has not been set.")
 
 
