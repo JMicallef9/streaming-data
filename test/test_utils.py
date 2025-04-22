@@ -1,4 +1,4 @@
-from src.utils import retrieve_articles, make_get_request, publish_data_to_message_broker, check_bucket_exists
+from src.utils import retrieve_articles, publish_data_to_message_broker, check_bucket_exists
 from unittest.mock import patch, Mock
 import json
 import os
@@ -15,10 +15,28 @@ def mock_get_request():
     """Creates a test response body."""
     with patch("requests.get") as mock_get:
         mock_response = Mock()
-        mock_response.json.return_value = {"response":{"status":"ok","userTier":"developer","total":926,"startIndex":1,"pageSize":10,"currentPage":1,"pages":93,"orderBy":"relevance","results":[{"id":"world/2025/apr/04/eu-urged-to-put-human-rights-centre-stage-at-first-central-asia-summit","type":"article","sectionId":"world","sectionName":"World news","webPublicationDate":"2025-04-04T02:00:39Z","webTitle":"EU urged to put human rights centre stage at first central Asia summit","webUrl":"https://www.theguardian.com/world/2025/apr/04/eu-urged-to-put-human-rights-centre-stage-at-first-central-asia-summit","apiUrl":"https://content.guardianapis.com/world/2025/apr/04/eu-urged-to-put-human-rights-centre-stage-at-first-central-asia-summit","isHosted":False,"pillarId":"pillar/news","pillarName":"News"},{"id":"environment/2023/jun/13/turkmenistan-moves-towards-plugging-massive-methane-leaks","type":"article","sectionId":"environment","sectionName":"Environment","webPublicationDate":"2023-06-13T10:55:32Z","webTitle":"Turkmenistan moves towards plugging massive methane leaks","webUrl":"https://www.theguardian.com/environment/2023/jun/13/turkmenistan-moves-towards-plugging-massive-methane-leaks","apiUrl":"https://content.guardianapis.com/environment/2023/jun/13/turkmenistan-moves-towards-plugging-massive-methane-leaks","isHosted":False,"pillarId":"pillar/news","pillarName":"News"}]}}
+        mock_response.json.return_value = {"response":
+                                           {"status":"ok","userTier":"developer","total":39565,"startIndex":1,"pageSize":10,"currentPage":1,"pages":3957,"orderBy":"newest","results":[{"id":"world/2025/mar/27/bbc-reporter-mark-lowen-arrested-and-deported-from-turkey-after-covering-protests","type":"article","sectionId":"world","sectionName":"World news","webPublicationDate":"2025-03-27T18:18:12Z","webTitle":"BBC reporter arrested and deported from Turkey after covering protests","webUrl":"https://www.theguardian.com/world/2025/mar/27/bbc-reporter-mark-lowen-arrested-and-deported-from-turkey-after-covering-protests","apiUrl":"https://content.guardianapis.com/world/2025/mar/27/bbc-reporter-mark-lowen-arrested-and-deported-from-turkey-after-covering-protests","isHosted":False,"pillarId":"pillar/news","pillarName":"News"},
+                                                                                                                                                                                       {"id":"world/2025/mar/25/eight-journalists-covering-anti-government-protests-held-in-turkey","type":"article","sectionId":"world","sectionName":"World news","webPublicationDate":"2025-03-25T16:38:14Z","webTitle":"Eight journalists covering anti-government protests held in Turkey","webUrl":"https://www.theguardian.com/world/2025/mar/25/eight-journalists-covering-anti-government-protests-held-in-turkey","apiUrl":"https://content.guardianapis.com/world/2025/mar/25/eight-journalists-covering-anti-government-protests-held-in-turkey","isHosted":False,"pillarId":"pillar/news","pillarName":"News"},
+                                                                                                                                                                                       {"id":"world/2025/mar/24/journalists-among-more-than-1100-arrested-in-turkey-crackdown-istanbul","type":"article","sectionId":"world","sectionName":"World news","webPublicationDate":"2025-03-24T17:04:13Z","webTitle":"Journalists among more than 1,100 arrested in Turkey crackdown","webUrl":"https://www.theguardian.com/world/2025/mar/24/journalists-among-more-than-1100-arrested-in-turkey-crackdown-istanbul","apiUrl":"https://content.guardianapis.com/world/2025/mar/24/journalists-among-more-than-1100-arrested-in-turkey-crackdown-istanbul","isHosted":False,"pillarId":"pillar/news","pillarName":"News"}
+                                                                                                                                                                                                     ]}}
         mock_get.return_value = mock_response
         yield mock_get
 
+@pytest.fixture
+def mock_invalid_get_request():
+    """Creates a test response body for an invalid request."""
+    with patch("requests.get") as mock_invalid_get:
+        mock_response = Mock()
+        mock_response.json.return_value = {"response":{"status":"ok","userTier":"developer","total":0,"startIndex":0,"pageSize":10,"currentPage":1,"pages":0,"orderBy":"relevance","results":[]}}
+        mock_invalid_get.return_value = mock_response
+        yield mock_invalid_get
+
+@pytest.fixture
+def test_api_key():
+    """Sets AWS region as environment variable."""
+    with patch.dict(os.environ, {'API_KEY': 'test-key'}):
+        yield
 
 @pytest.fixture
 def sqs_mock():
@@ -33,21 +51,21 @@ def sqs_mock():
 class TestRetrieveArticles:
     """Tests for the retrieve_articles function."""
 
-    def test_returns_list_of_dictionaries(self):
+    def test_returns_list_of_dictionaries(self, mock_get_request, test_api_key):
         """Ensures that a list of dictionaries is returned."""
         assert isinstance(retrieve_articles("test"), list)
     
-    def test_returns_list_of_10_items(self):
-        """Ensures that a list of 10 items is returned when a general search term is used."""
-        assert len(retrieve_articles("test")) == 10
+    def test_returns_correct_number_of_articles(self, mock_get_request, test_api_key):
+        """Ensures that a list of the correct length is returned."""
+        assert len(retrieve_articles("test")) == 3
     
-    def test_list_items_contain_correct_dictionary_keys(self):
+    def test_list_items_contain_correct_dictionary_keys(self, mock_get_request, test_api_key):
         """Ensures that the correct information about each article is returned."""
         articles = retrieve_articles("test")
         for article in articles:
             assert list(article.keys()) == ['webPublicationDate', 'webTitle', 'webUrl']
         
-    def test_list_items_contain_appropriate_values(self):
+    def test_list_items_contain_appropriate_values(self, mock_get_request, test_api_key):
         """Ensures that the correct values are returned for each article."""
         articles = retrieve_articles("test")
 
@@ -63,68 +81,85 @@ class TestRetrieveArticles:
             url_pattern = r"^https://www.theguardian.com/"
             assert re.search(url_pattern, url)
     
-    def test_list_values_are_accurate(self, mock_get_request):
+    def test_list_values_are_accurate(self, mock_get_request, test_api_key):
         """Uses a controlled test input to check that the correct information is returned."""
         articles = retrieve_articles("test")
 
-        assert articles[0]['webPublicationDate'] == "2025-04-04T02:00:39Z"
-        assert articles[0]['webTitle'] == "EU urged to put human rights centre stage at first central Asia summit"
-        assert articles[0]['webUrl'] == "https://www.theguardian.com/world/2025/apr/04/eu-urged-to-put-human-rights-centre-stage-at-first-central-asia-summit"
+        assert articles[0]['webPublicationDate'] == "2025-03-27T18:18:12Z"
+        assert articles[0]['webTitle'] == "BBC reporter arrested and deported from Turkey after covering protests"
+        assert articles[0]['webUrl'] == "https://www.theguardian.com/world/2025/mar/27/bbc-reporter-mark-lowen-arrested-and-deported-from-turkey-after-covering-protests"
 
-        assert articles[1]['webPublicationDate'] == "2023-06-13T10:55:32Z"
-        assert articles[1]['webTitle'] == "Turkmenistan moves towards plugging massive methane leaks"
-        assert articles[1]['webUrl'] == "https://www.theguardian.com/environment/2023/jun/13/turkmenistan-moves-towards-plugging-massive-methane-leaks"
+        assert articles[1]['webPublicationDate'] == "2025-03-25T16:38:14Z"
+        assert articles[1]['webTitle'] == "Eight journalists covering anti-government protests held in Turkey"
+        assert articles[1]['webUrl'] == "https://www.theguardian.com/world/2025/mar/25/eight-journalists-covering-anti-government-protests-held-in-turkey"
 
-    def test_returns_empty_list_if_invalid_query(self):
+    def test_returns_empty_list_if_invalid_query(self, mock_invalid_get_request, test_api_key):
         """Checks for an empty list if the query produces no results."""
         articles = retrieve_articles("qqqsdfgad")
 
         assert not articles
 
-    def test_returns_most_recent_articles_first(self):
-        """Ensures that the most recent articles are displayed first."""
-        articles = retrieve_articles("turkmenistan")
+    def test_articles_are_not_rearranged(self, mock_get_request, test_api_key):
+        """Ensures that the function preserves the order in which articles are retrieved from the API."""
 
-        dates = [datetime.strptime(article['webPublicationDate'], "%Y-%m-%dT%H:%M:%SZ") for article in articles]
-        sorted_dates = sorted(dates, reverse=True)
+        articles = retrieve_articles("turkey")
 
-        assert dates == sorted_dates
+        dates = [article['webPublicationDate'] for article in articles]
+
+        assert dates == ["2025-03-27T18:18:12Z", "2025-03-25T16:38:14Z", "2025-03-24T17:04:13Z"]
     
-    def test_results_filtered_by_date_if_specified(self):
-        """Ensures that date_from parameter is used to filter results."""
+    def test_request_includes_order_by_parameter(self, mock_get_request, test_api_key):
+        """Ensures that the order-by parameter is included in API requests."""
+        retrieve_articles("turkey")
+        args, kwargs = mock_get_request.call_args
+        assert kwargs["params"]["order-by"] == 'newest'
 
-        all_articles = retrieve_articles("magcon")
+    def test_request_includes_from_date_parameter(self, mock_get_request, test_api_key):
+        """Ensures that the date-from parameter is included in API requests."""
+        retrieve_articles("magcon", "2016-01-01")
+        args, kwargs = mock_get_request.call_args
+        assert kwargs["params"]["from-date"] == '2016-01-01'
 
-        filtered_articles = retrieve_articles("magcon", '2016-01-01')
-        alternative_format = retrieve_articles("magcon", '2016')
+    def test_from_date_omitted_from_request_if_not_provided(self, mock_get_request, test_api_key):
+        """Ensures that date_from parameter is omitted from the request if not provided by the user."""
 
-        assert all_articles != filtered_articles
-        assert all_articles != alternative_format
-        assert len(all_articles) > len(filtered_articles)
-        assert len(all_articles) > len(alternative_format)
-    
+        retrieve_articles("magcon")
+        args, kwargs = mock_get_request.call_args
+        assert "from-date" not in list(kwargs["params"].keys())
 
-    def test_error_message_received_if_invalid_date_format_used(self):
+    @patch("requests.get")
+    def test_error_message_received_if_invalid_date_format_used(self, mock_get, test_api_key):
         """Prints error message if user provides invalid date format."""
+        mock_response = Mock()
+        mock_response.json.return_value = {"response":
+                                           {"status":"error","message":"Request Failure ElasticError(search_phase_execution_exception,all shards failed,None,None,None,List(ElasticError(parse_exception,failed to parse date field [201601-01-01T00:00:00.000Z] with format [dateOptionalTime]: [failed to parse date field [201601-01-01T00:00:00.000Z] with format [dateOptionalTime]],None,None,None,null,None,None,None,List())),None,Some(can_match),Some(true),List(FailedShard(0,Some(content),Some(uA9rRc_3SVWFDJaYMNO23A),Some(ElasticError(parse_exception,failed to parse date field [201601-01-01T00:00:00.000Z] with format [dateOptionalTime]: [failed to parse date field [201601-01-01T00:00:00.000Z] with format [dateOptionalTime]],None,None,None,null,Some(CausedBy(illegal_argument_exception,failed to parse date field [201601-01-01T00:00:00.000Z] with format [dateOptionalTime],HashMap())),None,None,List())))))"}}
+        mock_get.return_value = mock_response
 
         with pytest.raises(ValueError) as err:
             retrieve_articles("magcon", '201601')
+
         assert str(err.value) == 'Invalid date format. Please use a valid ISO format e.g. "2016-01-01" or "2016"'
     
-    def test_handles_multiword_search_terms(self):
+    def test_handles_multiword_search_terms(self, mock_get_request, test_api_key):
         """Ensures that the function handles search terms of multiple words."""
-        output = retrieve_articles("machine learning")
-        assert len(output) == 10
+        retrieve_articles("machine learning")
 
-        for article in output:
-            assert list(article.keys()) == ['webPublicationDate', 'webTitle', 'webUrl']
+        args, kwargs = mock_get_request.call_args
+        assert kwargs["params"]["q"] == 'machine learning'
 
-    @patch.dict(os.environ, {"API_KEY": "invalid-key"})
-    def test_error_raised_if_api_key_is_invalid(self):
-        """Ensures that an error is raised if the API key in the environment is invalid."""
+    @patch("requests.get")
+    def test_error_raised_if_api_key_is_invalid(self, mock_get, test_api_key):
+        """Ensures that an error is raised if an invalid API key is provided."""
+        mock_response = Mock()
+        mock_response.json.return_value = {'message': 'Unauthorized'}
+
+        mock_get.return_value = mock_response
+
         with pytest.raises(ValueError) as err:
-            retrieve_articles("test")
+            retrieve_articles("turkey")
+
         assert str(err.value) == 'Request failed. API key is invalid.'
+
     
     @patch.dict(os.environ, {}, clear=True)
     def test_error_raised_if_no_api_key_provided(self):
@@ -133,10 +168,8 @@ class TestRetrieveArticles:
             retrieve_articles("test")
         assert str(err.value) == 'Request failed. API key has not been set.'
     
-    def test_handles_timeout_error(self):
-        with patch("requests.get") as mock_get:
-            mock_response = Mock()
-            mock_get.side_effect = requests.exceptions.HTTPError
+    def test_handles_timeout_error(self, mock_get_request, test_api_key):
+            mock_get_request.side_effect = requests.exceptions.HTTPError
             with pytest.raises(requests.exceptions.HTTPError) as err:
                 retrieve_articles("test")
             assert str(err.value) == 'HTTP request failed.'
