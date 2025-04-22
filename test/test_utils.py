@@ -1,4 +1,4 @@
-from src.utils import retrieve_articles, publish_data_to_message_broker, check_bucket_exists
+from src.utils import retrieve_articles, publish_data_to_message_broker, check_bucket_exists, create_s3_bucket
 from unittest.mock import patch, Mock
 import json
 import os
@@ -8,6 +8,7 @@ from datetime import datetime
 import requests
 from moto import mock_aws
 import boto3
+from botocore.exceptions import ClientError
 
 
 @pytest.fixture
@@ -326,7 +327,53 @@ class TestCheckBucketExists:
         with pytest.raises(ValueError) as err:
             check_bucket_exists()
         assert str(err.value) == "Error: S3 bucket name (BUCKET_NAME) has not been set."
+
+
+class TestCreateS3Bucket:
+
+    """Tests for the create_s3_bucket function."""
+    
+    @patch.dict(os.environ, {'BUCKET_NAME': 'guardian-api-call-tracker'})
+    def test_creates_s3_bucket(self, s3_mock):
+        """Checks that an s3 bucket has been created."""
+        assert len(s3_mock.list_buckets()['Buckets']) == 0
+
+        create_s3_bucket()
+
+        assert len(s3_mock.list_buckets()['Buckets']) == 1
+    
+    @patch.dict(os.environ, {'BUCKET_NAME': 'guardian-api-call-tracker'})
+    def test_bucket_name_matches_environment_variable_name(self, s3_mock):
+        """Checks that the bucket name of the created bucket matches the environment variable."""
+        create_s3_bucket()
+        assert s3_mock.head_bucket(Bucket='guardian-api-call-tracker')['ResponseMetadata']['HTTPStatusCode'] == 200
+
+    @patch.dict(os.environ, {'BUCKET_NAME': 'guardian-api-call-tracker'})
+    def test_returns_status_message(self, s3_mock):
+        """Checks the status message returned by the function."""
+        result = create_s3_bucket()
+        assert result['bucket_name'] == 'guardian-api-call-tracker'
+        assert result['status'] == 'created'
         
+
+    def test_error_message_received_if_no_bucket_name_set_in_environment(self, s3_mock):
+        """Checks that an error is raised if no bucket name is set."""
+        with pytest.raises(ValueError) as err:
+            create_s3_bucket()
+        assert str(err.value) == "Error: S3 bucket name (BUCKET_NAME) has not been set."
+
+    @patch.dict(os.environ, {'BUCKET_NAME': 'a...'})
+    @patch("boto3.client")
+    def test_error_message_received_if_bucket_name_is_invalid(self, mock_boto_client, s3_mock):
+        """Checks that an error is raised if the bucket name breaches S3 rules."""
+        mock_client = mock_boto_client.return_value
+        mock_client.create_bucket.side_effect = ClientError(error_response={'Error': {'Code': 'InvalidBucketName', 'Message': 'The specified bucket is not valid.'}},
+                                                            operation_name='CreateBucket')
+        with pytest.raises(ValueError) as err:
+            create_s3_bucket()
+        assert str(err.value) == 'Error: invalid bucket name provided.'
+
+
 
 
         
