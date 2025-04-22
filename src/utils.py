@@ -91,7 +91,18 @@ def publish_data_to_message_broker(data, broker_ref):
 
 
 def check_bucket_exists():
-    pass
+    bucket_name = os.getenv('BUCKET_NAME')
+
+    client = boto3.client('s3')
+
+    if bucket_name:
+        try:
+            client.head_bucket(Bucket=bucket_name)
+            return True
+        except botocore.exceptions.ClientError:
+            return False
+    
+    raise ValueError("Error: S3 bucket name (BUCKET_NAME) has not been set.")
 
 
 
