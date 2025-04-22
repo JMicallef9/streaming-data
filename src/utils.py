@@ -3,6 +3,7 @@ import json
 import os
 import boto3
 import botocore
+import datetime
 
 
 
@@ -139,6 +140,31 @@ def create_s3_bucket():
     raise ValueError("Error: S3 bucket name (BUCKET_NAME) has not been set.")
 
 
+def check_number_of_files(bucket_name):
+    """
+    Checks how many files are in an S3 bucket under today's date.
+
+    Args:
+        bucket_name (str): The name of an S3 bucket.
+    
+    Returns:
+        int: The number of files saved under today's date in the S3 bucket.
+    """
+    client = boto3.client('s3')
+
+    date = str(datetime.date.today())
+
+    response = client.list_objects_v2(Bucket=bucket_name,
+                                      Prefix=date)
+
+    contents = response.get('Contents')
+
+    if not contents:
+        return 0
+
+    return len(contents)
+
+    
 
 # S3 functions:
 # 1. does S3 bucket exist at all?
