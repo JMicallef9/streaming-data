@@ -445,6 +445,7 @@ class TestSaveFileToS3:
     """Tests for the save_file_to_s3 function."""
 
     def test_saves_correct_data_to_existing_s3_bucket(self, s3_mock, test_data, datetime_mock):
+        """Checks that the correct data is saved to an S3 bucket."""
         bucket_name = 'guardian-api-call-tracker'
         date = str(datetime.date.today())
 
@@ -460,6 +461,7 @@ class TestSaveFileToS3:
         assert json.loads(response) == test_data
     
     def test_creates_bucket_and_saves_file_if_bucket_does_not_exist(self, s3_mock, test_data, datetime_mock):
+        """Ensures that the function creates an S3 bucket if one does not exist."""
         bucket_name = 'guardian-api-call-tracker'
         date = str(datetime.date.today())
         save_file_to_s3(test_data, bucket_name)
@@ -470,6 +472,7 @@ class TestSaveFileToS3:
         assert json.loads(response) == test_data
     
     def test_saves_multiple_files_to_same_subfolder(self, s3_mock, test_data, datetime_mock):
+        """Checks that more than one file is saved to the same subfolder."""
         bucket_name = 'guardian-api-call-tracker'
         date = str(datetime.date.today())
         s3_mock.create_bucket(Bucket=bucket_name,
