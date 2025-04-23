@@ -1,4 +1,4 @@
-from src.utils import retrieve_articles, publish_data_to_message_broker, check_bucket_exists, create_s3_bucket, check_number_of_files
+from src.utils import retrieve_articles, publish_data_to_message_broker, check_bucket_exists, create_s3_bucket, check_number_of_files, save_file_to_s3
 from unittest.mock import patch, Mock
 import json
 import os
@@ -424,6 +424,81 @@ class TestCheckNumberOfFiles:
                            Body=test_data,
                            Key=f'{date}/filename_{i}')
         assert check_number_of_files(bucket_name) == 20
+
+@pytest.fixture()
+def datetime_mock():
+    """Creates a mock timestamp with different values each time it is called."""
+    with patch('src.utils.datetime') as mock_dt:
+
+        timestamps = ['mock_timestamp_1', 'mock_timestamp_2', 'mock_timestamp_3']
+        timestamp_iterator = iter(timestamps)
+
+        def generate_timestamp(arg):
+            return next(timestamp_iterator)
+        
+        mock_dt.now.return_value.time.return_value.strftime.side_effect = generate_timestamp
+
+        yield mock_dt
+
+class TestSaveFileToS3:
+
+    """Tests for the save_file_to_s3 function."""
+
+    def test_saves_correct_data_to_existing_s3_bucket(self, s3_mock, test_data, datetime_mock):
+        bucket_name = 'guardian-api-call-tracker'
+        date = str(datetime.date.today())
+
+        s3_mock.create_bucket(Bucket=bucket_name,
+                              CreateBucketConfiguration={'LocationConstraint': 'eu-west-2'})
+        
+        save_file_to_s3(test_data, bucket_name)
+
+
+        response = s3_mock.get_object(Bucket=bucket_name,
+                                      Key=f'{date}/mock_timestamp_1')['Body'].read()
+        
+        assert json.loads(response) == test_data
+    
+    def test_creates_bucket_and_saves_file_if_bucket_does_not_exist(self, s3_mock, test_data, datetime_mock):
+        bucket_name = 'guardian-api-call-tracker'
+        date = str(datetime.date.today())
+        save_file_to_s3(test_data, bucket_name)
+
+        response = s3_mock.get_object(Bucket=bucket_name,
+                                      Key=f'{date}/mock_timestamp_1')['Body'].read()
+        
+        assert json.loads(response) == test_data
+    
+    def test_saves_multiple_files_to_same_subfolder(self, s3_mock, test_data, datetime_mock):
+        bucket_name = 'guardian-api-call-tracker'
+        date = str(datetime.date.today())
+        s3_mock.create_bucket(Bucket=bucket_name,
+                              CreateBucketConfiguration={'LocationConstraint': 'eu-west-2'})
+        for _ in range(3):
+            save_file_to_s3(test_data, bucket_name)
+        
+        for i in range(1, 4):
+            response = s3_mock.get_object(Bucket=bucket_name,
+                                      Key=f'{date}/mock_timestamp_{i}')['Body'].read()
+            assert json.loads(response) == test_data
+        
+
+
+        
+
+
+
+        
+
+        
+
+
+
+
+
+
+
+
 
 
 
