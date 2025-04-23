@@ -297,6 +297,23 @@ class TestPublishDataToMessageBroker:
         test_data = []
         assert publish_data_to_message_broker(test_data, broker_reference) == 0
 
+    def test_queue_created_with_correct_retention_period(self, test_data, sqs_mock, aws_region):
+        """Checks that the SQS queue has a custom retention period set of 3 days."""
+
+        broker_reference = "new_content"
+
+        publish_data_to_message_broker(test_data, broker_reference)
+
+        queue_url = sqs_mock.get_queue_url(QueueName=broker_reference)['QueueUrl']
+
+        attributes = sqs_mock.get_queue_attributes(QueueUrl=queue_url,
+                                                   AttributeNames=["All"])["Attributes"]
+        
+        assert attributes['MessageRetentionPeriod'] == "259200"
+
+
+
+
 @pytest.fixture
 def s3_mock():
     """Creates a mock S3 client."""
