@@ -3,7 +3,7 @@ import json
 import os
 import boto3
 import botocore
-import datetime
+from datetime import date, datetime
 
 
 
@@ -152,10 +152,10 @@ def check_number_of_files(bucket_name):
     """
     client = boto3.client('s3')
 
-    date = str(datetime.date.today())
+    today_date = str(date.today())
 
     response = client.list_objects_v2(Bucket=bucket_name,
-                                      Prefix=date)
+                                      Prefix=today_date)
 
     contents = response.get('Contents')
 
@@ -164,6 +164,38 @@ def check_number_of_files(bucket_name):
 
     return len(contents)
 
+
+def save_file_to_s3(data, bucket_name):
+    """
+    Saves a file to an S3 bucket with information about the articles published to SQS.
+    
+    Args:
+        data (list): A list of articles retrieved from an API.
+        bucket_name (str): The S3 bucket in which the file should be saved.
+    
+    Returns:
+        None.
+    """
+    client = boto3.client('s3')
+
+    today_date = str(date.today())
+    timestamp = datetime.now().time().strftime("%H-%M-%S")
+
+    try:
+        client.head_bucket(Bucket=bucket_name)
+    except botocore.exceptions.ClientError:
+        client.create_bucket(Bucket=bucket_name,
+                         CreateBucketConfiguration={'LocationConstraint': 'eu-west-2'})
+        
+
+    client.put_object(Bucket=bucket_name,
+                      Body=json.dumps(data),
+                      Key=f'{today_date}/{timestamp}')
+    
+
+
+
+    
     
 
 # S3 functions:
