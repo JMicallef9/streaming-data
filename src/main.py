@@ -1,5 +1,6 @@
-from src.utils import retrieve_articles, publish_data_to_message_broker
+from src.utils import retrieve_articles, publish_data_to_message_broker, check_bucket_exists, create_s3_bucket, check_number_of_files, save_file_to_s3
 import time
+import os
 
 def lambda_handler(event, context):
     """
@@ -19,6 +20,18 @@ def lambda_handler(event, context):
     query = event.get('query')
     from_date = event.get('from_date')
     broker_ref = event.get('broker_ref')
+
+    bucket_exists = check_bucket_exists()
+
+    if not bucket_exists:
+        create_s3_bucket()
+    
+    bucket_name = os.getenv('BUCKET_NAME')
+
+    call_count = check_number_of_files(bucket_name)
+
+    if call_count >= 50:
+        return {'message': f'Rate limit exceeded. No articles published to {broker_ref}'}
 
     if from_date:
         articles = retrieve_articles(query, from_date)
