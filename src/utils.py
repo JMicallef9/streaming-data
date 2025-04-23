@@ -73,7 +73,8 @@ def publish_data_to_message_broker(data, broker_ref):
         queue_url = client.get_queue_url(QueueName=broker_ref)['QueueUrl']
     except botocore.exceptions.ClientError as e:
         if e.response['Error']['Code'] == 'AWS.SimpleQueueService.NonExistentQueue':
-            client.create_queue(QueueName=broker_ref)
+            client.create_queue(QueueName=broker_ref,
+                                Attributes={'MessageRetentionPeriod': '259200'})
             queue_url = client.get_queue_url(QueueName=broker_ref)['QueueUrl']
 
     if not data:
