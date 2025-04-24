@@ -43,7 +43,9 @@ def lambda_handler(event, context):
     call_count = check_number_of_files(bucket_name)
 
     if call_count >= 50:
-        return {'message': f'Rate limit exceeded. No articles published to {broker_ref}'}
+        return {
+            'message': f'Rate limit exceeded. No articles published to {broker_ref}'
+            }
 
     if from_date:
         articles = retrieve_articles(query, from_date)
@@ -56,12 +58,7 @@ def lambda_handler(event, context):
         count = publish_data_to_message_broker(articles, broker_ref)
         save_file_to_s3(articles, bucket_name)
 
-    
     return {'message': f'{count} articles published to {broker_ref}.'}
-
-
-
-    
 
 
 if __name__ == '__main__':

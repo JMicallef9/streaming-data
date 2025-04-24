@@ -43,7 +43,8 @@ def retrieve_articles(query, from_date=None):
 
     if not isinstance(result, list):
         raise ValueError(
-            'Invalid date format. Please use a valid ISO format e.g. "2016-01-01" or "2016"'
+            '''Invalid date format.
+            Please use a valid ISO format e.g. "2016-01-01" or "2016"'''
             )
 
     articles = []
@@ -58,28 +59,31 @@ def retrieve_articles(query, from_date=None):
 
     return articles
 
+
 def publish_data_to_message_broker(data, broker_ref):
     """
     Publishes data to a message broker hosted on AWS SQS.
 
     Args:
-        data (list): A list of dictionaries containing information about articles from The Guardian's API.
+        data (list): A list of dictionaries with information about articles.
         broker_ref (str): A reference to a message broker on AWS SQS.
-    
+
     Returns:
         int: The number of articles successfully published.
     """
     if not os.getenv("AWS_REGION"):
-        raise ValueError('Request failed. AWS region has not been specified.')
-    
+        raise ValueError('''Request failed.
+                         AWS region has not been specified.''')
+
     client = boto3.client('sqs', region_name=os.getenv("AWS_REGION"))
 
     try:
         queue_url = client.get_queue_url(QueueName=broker_ref)['QueueUrl']
     except botocore.exceptions.ClientError as e:
         if e.response['Error']['Code'] == 'AWS.SimpleQueueService.NonExistentQueue':
-            client.create_queue(QueueName=broker_ref,
-                                Attributes={'MessageRetentionPeriod': '259200'})
+            client.create_queue(
+                QueueName=broker_ref,
+                Attributes={'MessageRetentionPeriod': '259200'})
             queue_url = client.get_queue_url(QueueName=broker_ref)['QueueUrl']
 
     if not data:
@@ -87,7 +91,8 @@ def publish_data_to_message_broker(data, broker_ref):
 
     if isinstance(data, list) and all(isinstance(item, dict) for item in data):
         articles = [
-            {'Id': str(i), "MessageBody": json.dumps(item)} for i, item in enumerate(data)]
+            {'Id': str(i),
+             "MessageBody": json.dumps(item)} for i, item in enumerate(data)]
 
         response = client.send_message_batch(QueueUrl=queue_url, Entries=articles)
         count = len(response.get('Successful'))
