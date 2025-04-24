@@ -6,10 +6,10 @@ import botocore
 from datetime import date, datetime
 
 
-
 def retrieve_articles(query, from_date=None):
     """
-    Makes a GET request to The Guardian API using a given query and returns a list of relevant articles.
+    Makes a GET request to The Guardian API using a given query and 
+    returns a list of relevant articles.
     
     Args:
         query (str): The search term to use when making the GET request.
@@ -17,7 +17,6 @@ def retrieve_articles(query, from_date=None):
     Returns:
         list: A list of articles that match the query.
     """
-
     api_key = os.getenv("API_KEY")
 
     if not api_key:

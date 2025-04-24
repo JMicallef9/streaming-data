@@ -1,10 +1,18 @@
-from src.utils import retrieve_articles, publish_data_to_message_broker, check_bucket_exists, create_s3_bucket, check_number_of_files, save_file_to_s3
+from src.utils import (
+    retrieve_articles, 
+    publish_data_to_message_broker, 
+    check_bucket_exists, 
+    create_s3_bucket, 
+    check_number_of_files, 
+    save_file_to_s3)
 import time
 import os
 
+
 def lambda_handler(event, context):
     """
-    Retrieves articles from The Guardian API and publishes them to SQS via Lambda execution.
+    Retrieves articles from The Guardian API and publishes them to SQS 
+    via Lambda execution.
 
     Args:
         event (dict): The event payload that triggers the Lambda function. Includes the following keys:
@@ -37,10 +45,13 @@ def lambda_handler(event, context):
         articles = retrieve_articles(query, from_date)
         time.sleep(1)
         count = publish_data_to_message_broker(articles, broker_ref)
+        save_file_to_s3(articles, bucket_name)
     else:
         articles = retrieve_articles(query)
         time.sleep(1)
         count = publish_data_to_message_broker(articles, broker_ref)
+        save_file_to_s3(articles, bucket_name)
+
     
     return {'message': f'{count} articles published to {broker_ref}.'}
 

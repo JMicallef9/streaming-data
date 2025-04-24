@@ -5,6 +5,7 @@ import boto3
 from unittest.mock import patch
 import os
 
+
 @pytest.fixture
 def sqs_mock():
     """Creates a mock SQS client."""
@@ -14,11 +15,13 @@ def sqs_mock():
         sqs.create_queue(QueueName="guardian_content")
         yield sqs
 
+
 @pytest.fixture
 def aws_region():
     """Sets AWS region as environment variable."""
     with patch.dict(os.environ, {'AWS_REGION': 'eu-west-2'}):
         yield
+
 
 class TestLambdaHandler:
 
