@@ -370,14 +370,17 @@ def test_data():
                 "Who said what: using machine learning"
                 "to correctly attribute quotes"
             ),
-                  "webUrl": (
-                      "https://www.theguardian.com/info/2023/nov/21/who-said-what-"
-                      "using-machine-learning-to-correctly-attribute-quotes"
-                    )
-        }, 
+            "webUrl": (
+                "https://www.theguardian.com/info/2023/nov/21/who-said-what-"
+                "using-machine-learning-to-correctly-attribute-quotes"
+            )
+        },
         {
             "webPublicationDate": "2025-04-04T02:00:39Z",
-            "webTitle": "EU urged to put human rights centre stage at first central Asia summit",
+            "webTitle": (
+                "EU urged to put human rights centre stage "
+                "at first central Asia summit"
+            ),
             "webUrl": (
                        "https://www.theguardian.com/world/2025/apr/04/eu-"
                        "urged-to-put-human-rights-centre-stage-at-first-"
@@ -387,17 +390,22 @@ def test_data():
                 ]
     yield test_data
 
+
 @pytest.fixture
 def aws_region():
     """Sets AWS region as environment variable."""
     with patch.dict(os.environ, {'AWS_REGION': 'eu-west-2'}):
         yield
 
+
 class TestPublishDataToMessageBroker:
     """Tests for the publish_data_to_message_broker function."""
 
-    def test_publishes_single_message_to_message_broker(self, sqs_mock, aws_region):
-        """Checks whether a single dictionary is successfully published to AWS SQS."""
+    def test_publishes_single_message_to_message_broker(
+            self,
+            sqs_mock,
+            aws_region):
+        """Checks whether single dictionary is published to AWS SQS."""
         test_data = [
             {
                 "webPublicationDate": "2023-11-21T11:11:31Z",
