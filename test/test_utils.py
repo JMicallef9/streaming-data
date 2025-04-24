@@ -43,17 +43,18 @@ def mock_get_request():
                   "webTitle": (
                       'BBC reporter arrested and deported from '
                       'Turkey after covering protests'),
-                  "webUrl": ("https://www.theguardian.com/world/2025/mar/27/"
-                  "bbc-reporter-mark-lowen-arrested-and-deported-from-"
-                  "turkey-after-covering-protests"),
+                  "webUrl": (
+                      "https://www.theguardian.com/world/2025/mar/27/"
+                      "bbc-reporter-mark-lowen-arrested-and-deported-from-"
+                      "turkey-after-covering-protests"),
                   "apiUrl": """https://content.guardianapis.com/world/2025/mar/27/
                   bbc-reporter-mark-lowen-arrested-and-deported-from-
                   turkey-after-covering-protests""",
                   "isHosted": False, "pillarId": "pillar/news",
-                  "pillarName": "News"
-                  },
-                  {"id": """world/2025/mar/25/eight-journalists-covering-
-                   anti-government-protests-held-in-turkey""",
+                  "pillarName": "News"},
+                  {"id": (
+                      "world/2025/mar/25/eight-journalists-covering-"
+                      "anti-government-protests-held-in-turkey"),
                    "type": "article",
                    "sectionId": "world",
                    "sectionName": "World news",
@@ -70,17 +71,20 @@ def mock_get_request():
                    "isHosted": False,
                    "pillarId": "pillar/news",
                    "pillarName": "News"},
-                   {"id":"""world/2025/mar/24/journalists-among-more-than-
-                    1100-arrested-in-turkey-crackdown-istanbul""",
+                   {"id":(
+                       "world/2025/mar/24/journalists-among-more-than-"
+                       "1100-arrested-in-turkey-crackdown-istanbul"),
                     "type": "article",
                     "sectionId": "world",
                     "sectionName": "World news",
                     "webPublicationDate": "2025-03-24T17:04:13Z",
                     "webTitle": "Journalists among more than 1,100 arrested in Turkey crackdown",
-                    "webUrl": """https://www.theguardian.com/world/2025/mar/24/
-                    journalists-among-more-than-1100-arrested-in-turkey-crackdown-istanbul""",
-                    "apiUrl": """https://content.guardianapis.com/world/2025/mar/24/
-                    journalists-among-more-than-1100-arrested-in-turkey-crackdown-istanbul""",
+                    "webUrl": (
+                        "https://www.theguardian.com/world/2025/mar/24/"
+                        "journalists-among-more-than-1100-arrested-in-turkey-crackdown-istanbul"),
+                    "apiUrl": (
+                        "https://content.guardianapis.com/world/2025/mar/24/"
+                        "journalists-among-more-than-1100-arrested-in-turkey-crackdown-istanbul"),
                     "isHosted": False,"pillarId": "pillar/news",
                     "pillarName": "News"
                     }]}}
