@@ -54,7 +54,8 @@ def mock_get_request():
                   "isHosted": False, "pillarId": "pillar/news",
                   "pillarName": "News"
                   },
-                  {"id": (
+                  {
+                      "id": (
                       "world/2025/mar/25/eight-journalists-covering-"
                       "anti-government-protests-held-in-turkey"),
                    "type": "article",
@@ -66,14 +67,17 @@ def mock_get_request():
                        "protests held in Turkey"),
                    "webUrl": (
                        "https://www.theguardian.com/world/2025/mar/25/"
-                       "eight-journalists-covering-anti-government-protests-held-in-turkey"),
+                       "eight-journalists-covering-anti-government-protests"
+                       "-held-in-turkey"),
                    "apiUrl": (
                        "https://content.guardianapis.com/world/2025/mar/25/"
-                       "eight-journalists-covering-anti-government-protests-held-in-turkey"),
+                       "eight-journalists-covering-anti-government-protests-"
+                       "held-in-turkey"),
                    "isHosted": False,
                    "pillarId": "pillar/news",
                    "pillarName": "News"},
-                   {"id":(
+                   {
+                       "id":(
                        "world/2025/mar/24/journalists-among-more-than-"
                        "1100-arrested-in-turkey-crackdown-istanbul"),
                     "type": "article",
@@ -92,6 +96,7 @@ def mock_get_request():
                     }]}}
         mock_get.return_value = mock_response
         yield mock_get
+
 
 @pytest.fixture
 def mock_invalid_get_request():
@@ -112,11 +117,13 @@ def mock_invalid_get_request():
         mock_invalid_get.return_value = mock_response
         yield mock_invalid_get
 
+
 @pytest.fixture
 def test_api_key():
     """Sets AWS region as environment variable."""
     with patch.dict(os.environ, {'API_KEY': 'test-key'}):
         yield
+
 
 @pytest.fixture
 def sqs_mock():
@@ -160,7 +167,8 @@ class TestRetrieveArticles:
             url = article['webUrl']
             url_pattern = r"^https://www.theguardian.com/"
             assert re.search(url_pattern, url)
-    
+
+
     def test_list_values_are_accurate(self, mock_get_request, test_api_key):
         """Uses a controlled test input to check that the correct information is returned."""
         articles = retrieve_articles("test")
@@ -182,11 +190,13 @@ class TestRetrieveArticles:
             "https://www.theguardian.com/world/2025/mar/25/"
             "eight-journalists-covering-anti-government-protests-held-in-turkey")
 
+
     def test_returns_empty_list_if_invalid_query(self, mock_invalid_get_request, test_api_key):
         """Checks for an empty list if the query produces no results."""
         articles = retrieve_articles("qqqsdfgad")
 
         assert not articles
+
 
     def test_articles_are_not_rearranged(self, mock_get_request, test_api_key):
         """Ensures that the function preserves the order in which articles are retrieved from the API."""
@@ -196,18 +206,21 @@ class TestRetrieveArticles:
         dates = [article['webPublicationDate'] for article in articles]
 
         assert dates == ["2025-03-27T18:18:12Z", "2025-03-25T16:38:14Z", "2025-03-24T17:04:13Z"]
-    
+
+
     def test_request_includes_order_by_parameter(self, mock_get_request, test_api_key):
         """Ensures that the order-by parameter is included in API requests."""
         retrieve_articles("turkey")
         args, kwargs = mock_get_request.call_args
         assert kwargs["params"]["order-by"] == 'newest'
 
+
     def test_request_includes_from_date_parameter(self, mock_get_request, test_api_key):
         """Ensures that the date-from parameter is included in API requests."""
         retrieve_articles("magcon", "2016-01-01")
         args, kwargs = mock_get_request.call_args
         assert kwargs["params"]["from-date"] == '2016-01-01'
+
 
     def test_from_date_omitted_from_request_if_not_provided(self, mock_get_request, test_api_key):
         """Ensures that date_from parameter is omitted from the request if not provided by the user."""
@@ -228,7 +241,8 @@ class TestRetrieveArticles:
             retrieve_articles("magcon", '201601')
 
         assert str(err.value) == 'Invalid date format. Please use a valid ISO format e.g. "2016-01-01" or "2016"'
-    
+
+
     def test_handles_multiword_search_terms(self, mock_get_request, test_api_key):
         """Ensures that the function handles search terms of multiple words."""
         retrieve_articles("machine learning")
@@ -355,6 +369,7 @@ class TestPublishDataToMessageBroker:
         for item in received_messages:
             assert item in test_data
 
+
     def test_error_raised_if_invalid_input(self, sqs_mock, aws_region):
         """Checks that an error is raised if data has incorrect data type."""
         broker_reference = "new_content"
@@ -362,7 +377,8 @@ class TestPublishDataToMessageBroker:
         with pytest.raises(ValueError) as err:
             publish_data_to_message_broker(test_data, broker_reference)
         assert str(err.value) == 'Invalid data type. Input must be a list of dictionaries.'
-    
+
+
     def test_error_raised_if_region_not_set_in_environment(self, sqs_mock, test_data):
         """Checks that an error is raised if region not set as environment variable."""
         broker_reference = "new_content"
@@ -370,20 +386,23 @@ class TestPublishDataToMessageBroker:
         with pytest.raises(ValueError) as err:
             publish_data_to_message_broker(test_data, broker_reference)
         assert str(err.value) == 'Request failed. AWS region has not been specified.'
-    
+
+
     def test_returns_number_of_articles_published(self, sqs_mock, test_data, aws_region):
         """Ensures that the function returns the number of articles published."""
 
         broker_reference = "new_content"
 
         assert publish_data_to_message_broker(test_data, broker_reference) == 2
-    
+
+
     def test_returns_zero_if_no_articles_published(self, sqs_mock, aws_region):
         """Ensures that the function returns zero if passed an empty list."""
 
         broker_reference = "new_content"
         test_data = []
         assert publish_data_to_message_broker(test_data, broker_reference) == 0
+
 
     def test_queue_created_with_correct_retention_period(self, test_data, sqs_mock, aws_region):
         """Checks that the SQS queue has a custom retention period set of 3 days."""
@@ -398,8 +417,6 @@ class TestPublishDataToMessageBroker:
                                                    AttributeNames=["All"])["Attributes"]
         
         assert attributes['MessageRetentionPeriod'] == "259200"
-
-
 
 
 @pytest.fixture
@@ -426,7 +443,8 @@ class TestCheckBucketExists:
     def test_returns_false_if_bucket_does_not_exist(self, s3_mock):
         """Checks that the function returns False if S3 bucket does not exist."""
         assert check_bucket_exists() == False
-    
+
+
     def test_returns_error_message_if_bucket_name_not_provided(self, s3_mock):
         """Checks that an error message is received if bucket name not set in environment."""
         with pytest.raises(ValueError) as err:
@@ -486,7 +504,8 @@ class TestCheckNumberOfFiles:
         s3_mock.create_bucket(Bucket='guardian-api-call-tracker',
                               CreateBucketConfiguration={'LocationConstraint': 'eu-west-2'})
         assert check_number_of_files('guardian-api-call-tracker') == 0
-    
+
+
     def test_returns_zero_if_no_valid_folder_exists(self, s3_mock):
         """Checks that zero is returned if there is no folder for today's date in the S3 bucket."""
         bucket_name = 'guardian-api-call-tracker'
@@ -499,7 +518,8 @@ class TestCheckNumberOfFiles:
                            Body=test_data,
                            Key='filename')
         assert check_number_of_files(bucket_name) == 0
-    
+
+
     def test_returns_one_if_file_is_located_in_folder_for_today(self, s3_mock):
         """Checks that the function returns 1 if there is a file saved under today's date."""
         bucket_name = 'guardian-api-call-tracker'
@@ -514,7 +534,8 @@ class TestCheckNumberOfFiles:
                            Body=test_data,
                            Key=f'{date}/filename')
         assert check_number_of_files(bucket_name) == 1
-    
+
+
     def test_returns_correct_number_if_multiple_files_located_in_folder(self, s3_mock):
         bucket_name = 'guardian-api-call-tracker'
         s3_mock.create_bucket(Bucket=bucket_name,
@@ -564,7 +585,8 @@ class TestSaveFileToS3:
                                       Key=f'{date}/mock_timestamp_1')['Body'].read()
         
         assert json.loads(response) == test_data
-    
+
+
     def test_creates_bucket_and_saves_file_if_bucket_does_not_exist(self, s3_mock, test_data, datetime_mock):
         """Ensures that the function creates an S3 bucket if one does not exist."""
         bucket_name = 'guardian-api-call-tracker'
@@ -575,7 +597,8 @@ class TestSaveFileToS3:
                                       Key=f'{date}/mock_timestamp_1')['Body'].read()
         
         assert json.loads(response) == test_data
-    
+
+
     def test_saves_multiple_files_to_same_subfolder(self, s3_mock, test_data, datetime_mock):
         """Checks that more than one file is saved to the same subfolder."""
         bucket_name = 'guardian-api-call-tracker'
@@ -589,7 +612,7 @@ class TestSaveFileToS3:
             response = s3_mock.get_object(Bucket=bucket_name,
                                       Key=f'{date}/mock_timestamp_{i}')['Body'].read()
             assert json.loads(response) == test_data
-        
+
 
 
         
