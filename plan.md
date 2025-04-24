@@ -9,7 +9,6 @@ message broker reference (i.e. the ID - "guardian_content")
 Retrieve up to 10 MOST RECENT articles
 
 Abide by Guardian API limits:
-Up to 1 call per second
 Up to 500 calls per day
 
 JSON format for published data:
@@ -19,10 +18,7 @@ JSON format for published data:
     "webUrl": "https://www.theguardian.com/info/2023/nov/21/who-said-what-using-machine-learning-to-correctly-attribute-quotes"
 }
 
-(optional: add other fields at your discretion)
-e.g. "content_preview" in the
-message that displays the first few lines of the article content, perhaps the first
-1000 characters or so.
+
 
 Remember:
 - PEP8 and security testing
@@ -31,14 +27,26 @@ Remember:
 
 ## Performance criteria
 The tool is not expected to handle more than 50 requests per day to the API.
-
-Data should not be persisted in the message broker longer than three days. - I think default in SQS is 14 days???
-
-
-functions:
-make call to Guardian API and retrieve article
-convert to correct JSON format
-upload to AWS SQS
+Up to 1 call per second
 
 
+
+
+
+<!-- Data should not be persisted in the message broker longer than three days. - I think default in SQS is 14 days??? -->
+AWS credentials
+python dotenv
+add ci/cd & yaml
+pep8
+integration testing & real API calls
+
+additional tests and error handling???
+
+
+(optional: add other fields at your discretion)
+e.g. "content_preview" in the
+message that displays the first few lines of the article content, perhaps the first
+1000 characters or so.
+
+- The complete size of the module should not exceed [the memory limits for Python Lambda dependencies](https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-package.html)
 
