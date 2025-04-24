@@ -33,7 +33,7 @@ def mock_get_request():
              "currentPage": 1,
              "pages": 3957,
              "orderBy": "newest",
-"results": [
+             "results": [
     {
         "id": (
             "world/2025/mar/27/bbc-reporter-mark-lowen-"
@@ -92,26 +92,28 @@ def mock_get_request():
         "id": (
             "world/2025/mar/24/journalists-among-more-than-"
             "1100-arrested-in-turkey-crackdown-istanbul"
-            ),
-                    "type": "article",
-                    "sectionId": "world",
-                    "sectionName": "World news",
-                    "webPublicationDate": "2025-03-24T17:04:13Z",
-                    "webTitle": (
-                        "Journalists among more than "
-                        "1,100 arrested in Turkey crackdown"
-                        ),
-                    "webUrl": (
-                        "https://www.theguardian.com/world/2025/mar/24/"
-                        "journalists-among-more-than-1100-arrested-"
-                        "in-turkey-crackdown-istanbul"),
-                    "apiUrl": (
-                        "https://content.guardianapis.com/world/2025/mar/24/"
-                        "journalists-among-more-than-1100-arrested-in-turkey"
-                        "-crackdown-istanbul"),
-                    "isHosted": False,"pillarId": "pillar/news",
-                    "pillarName": "News"
-                    }]}}
+        ),
+        "type": "article",
+        "sectionId": "world",
+        "sectionName": "World news",
+        "webPublicationDate": "2025-03-24T17:04:13Z",
+        "webTitle": (
+            "Journalists among more than "
+            "1,100 arrested in Turkey crackdown"
+        ),
+        "webUrl": (
+            "https://www.theguardian.com/world/2025/mar/24/"
+            "journalists-among-more-than-1100-arrested-"
+            "in-turkey-crackdown-istanbul"
+        ),
+        "apiUrl": (
+            "https://content.guardianapis.com/world/2025/mar/24/"
+            "journalists-among-more-than-1100-arrested-in-turkey"
+            "-crackdown-istanbul"
+        ),
+        "isHosted": False,"pillarId": "pillar/news",
+        "pillarName": "News"
+        }]}}
         mock_get.return_value = mock_response
         yield mock_get
 
