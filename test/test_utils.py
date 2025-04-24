@@ -40,8 +40,9 @@ def mock_get_request():
                   "sectionId": "world",
                   "sectionName": "World news",
                   "webPublicationDate": "2025-03-27T18:18:12Z",
-                  "webTitle":('BBC reporter arrested and deported from '
-                  'Turkey after covering protests'),
+                  "webTitle": (
+                      'BBC reporter arrested and deported from '
+                      'Turkey after covering protests'),
                   "webUrl": ("https://www.theguardian.com/world/2025/mar/27/"
                   "bbc-reporter-mark-lowen-arrested-and-deported-from-"
                   "turkey-after-covering-protests"),
