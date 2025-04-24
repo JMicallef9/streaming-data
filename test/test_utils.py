@@ -1,4 +1,11 @@
-from src.utils import retrieve_articles, publish_data_to_message_broker, check_bucket_exists, create_s3_bucket, check_number_of_files, save_file_to_s3
+from src.utils import (
+    retrieve_articles,
+    publish_data_to_message_broker,
+    check_bucket_exists,
+    create_s3_bucket,
+    check_number_of_files,
+    save_file_to_s3
+    )
 from unittest.mock import patch, Mock
 import json
 import os

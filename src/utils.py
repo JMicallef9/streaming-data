@@ -8,12 +8,12 @@ from datetime import date, datetime
 
 def retrieve_articles(query, from_date=None):
     """
-    Makes a GET request to The Guardian API using a given query and 
+    Makes a GET request to The Guardian API using a given query and
     returns a list of relevant articles.
-    
+
     Args:
         query (str): The search term to use when making the GET request.
-    
+
     Returns:
         list: A list of articles that match the query.
     """
@@ -23,7 +23,7 @@ def retrieve_articles(query, from_date=None):
         raise ValueError('Request failed. API key has not been set.')
 
     url = 'https://content.guardianapis.com/search'
-    params = {'q': query, 'api-key': api_key, 'order-by': 'newest'} 
+    params = {'q': query, 'api-key': api_key, 'order-by': 'newest'}
 
     if from_date:
         params['from-date'] = from_date
@@ -31,9 +31,9 @@ def retrieve_articles(query, from_date=None):
     try:
         response = requests.get(url, params=params, timeout=10)
         data = response.json()
-    except requests.RequestException as e:
-        raise requests.exceptions.HTTPError(f'HTTP request failed.')
-    
+    except requests.RequestException:
+        raise requests.exceptions.HTTPError('HTTP request failed.')
+
     response = data.get('response')
 
     if not response:
@@ -42,14 +42,20 @@ def retrieve_articles(query, from_date=None):
     result = response.get('results')
 
     if not isinstance(result, list):
-        raise ValueError('Invalid date format. Please use a valid ISO format e.g. "2016-01-01" or "2016"')
+        raise ValueError(
+            'Invalid date format. Please use a valid ISO format e.g. "2016-01-01" or "2016"'
+            )
 
     articles = []
 
     for item in result:
-        updated_item = {"webPublicationDate": item['webPublicationDate'], "webTitle": item['webTitle'], "webUrl": item['webUrl']}
+        updated_item = {
+            "webPublicationDate": item['webPublicationDate'],
+            "webTitle": item['webTitle'],
+            "webUrl": item['webUrl']
+            }
         articles.append(updated_item)
-    
+
     return articles
 
 def publish_data_to_message_broker(data, broker_ref):
