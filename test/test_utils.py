@@ -409,10 +409,14 @@ class TestPublishDataToMessageBroker:
         test_data = [
             {
                 "webPublicationDate": "2023-11-21T11:11:31Z",
-                "webTitle": "Who said what: using machine learning to correctly attribute quotes",
+                "webTitle": (
+                    "Who said what: using machine learning "
+                    "to correctly attribute quotes"
+                ),
                 "webUrl": (
-                    "https://www.theguardian.com/info/2023/nov/21/who-said-what-"
-                    "using-machine-learning-to-correctly-attribute-quotes"
+                    "https://www.theguardian.com/info/2023/nov/21/who-"
+                    "said-what-using-machine-learning-to-correctly-"
+                    "attribute-quotes"
                 )
             }
         ]
@@ -429,7 +433,7 @@ class TestPublishDataToMessageBroker:
         extracted_data = json.loads(message)
 
         assert test_data[0] == extracted_data
-    
+
     def test_publishes_multiple_messages_to_message_broker(self, sqs_mock, test_data, aws_region):
         """Checks whether multiple dictionaries are successfully published to AWS SQS."""
 
@@ -445,7 +449,6 @@ class TestPublishDataToMessageBroker:
 
         for item in test_data:
             assert item in received_messages
-        
 
     def test_publishes_new_messages_to_existing_queue(self, sqs_mock, test_data, aws_region):
         """Checks whether new messages are successfully published to a queue that already contains messages."""
@@ -454,13 +457,32 @@ class TestPublishDataToMessageBroker:
 
         publish_data_to_message_broker(test_data, broker_reference)
 
-        new_data = [{"webPublicationDate": "2021-11-21T11:11:31Z",
-                      "webTitle": "new: using machine learning to correctly attribute quotes",
-                      "webUrl": "https://www.theguardian.com/info/2021/nov/21/who-said-what-using-machine-learning-to-correctly-attribute-quotes"}, 
-                      {"webPublicationDate":"2021-04-04T02:00:39Z",
-                       "webTitle":"new EU urged to put human rights centre stage at first central Asia summit",
-                       "webUrl":"https://www.theguardian.com/world/2021/apr/04/eu-urged-to-put-human-rights-centre-stage-at-first-central-asia-summit"}]
-
+        new_data = [
+            {
+                "webPublicationDate": "2023-11-21T11:11:31Z",
+                "webTitle": (
+                    "Who said what: using machine learning "
+                    "to correctly attribute quotes"
+                ),
+                "webUrl": (
+                    "https://www.theguardian.com/info/2023/nov/21/who-"
+                    "said-what-using-machine-learning-to-correctly-"
+                    "attribute-quotes"
+                )
+            }, {
+                "webPublicationDate": "2021-04-04T02:00:39Z",
+                "webTitle": (
+                    "new EU urged to put human rights centre"
+                    "stage at first central Asia summit"
+                ),
+                "webUrl": (
+                    "https://www.theguardian.com/world/2021/apr/04/eu-"
+                    "urged-to-put-human-rights-centre-stage-at-first-"
+                    "central-asia-summit"
+                )
+            }
+        ]
+        
         publish_data_to_message_broker(new_data, broker_reference)
 
         queue_url = sqs_mock.get_queue_url(QueueName=broker_reference)['QueueUrl']
