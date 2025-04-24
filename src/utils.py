@@ -80,7 +80,8 @@ def publish_data_to_message_broker(data, broker_ref):
     try:
         queue_url = client.get_queue_url(QueueName=broker_ref)['QueueUrl']
     except botocore.exceptions.ClientError as e:
-        if e.response['Error']['Code'] == 'AWS.SimpleQueueService.NonExistentQueue':
+        error_code = e.response['Error']['Code']
+        if error_code == 'AWS.SimpleQueueService.NonExistentQueue':
             client.create_queue(
                 QueueName=broker_ref,
                 Attributes={'MessageRetentionPeriod': '259200'})
@@ -94,21 +95,24 @@ def publish_data_to_message_broker(data, broker_ref):
             {'Id': str(i),
              "MessageBody": json.dumps(item)} for i, item in enumerate(data)]
 
-        response = client.send_message_batch(QueueUrl=queue_url, Entries=articles)
+        response = client.send_message_batch(
+            QueueUrl=queue_url,
+            Entries=articles)
         count = len(response.get('Successful'))
         return count
 
     else:
-        raise ValueError("Invalid data type. Input must be a list of dictionaries.")
+        raise ValueError('''Invalid data type.
+                         Input must be a list of dictionaries.''')
 
 
 def check_bucket_exists():
     """
-    Checks whether an S3 bucket exists with a name matching the BUCKET_NAME environment variable.
-    
+    Checks whether an S3 bucket exists with a specific name.
+
     Args:
         None.
-    
+
     Returns:
         bool: True or False depending on whether the bucket exists.
     """
@@ -122,7 +126,7 @@ def check_bucket_exists():
             return True
         except botocore.exceptions.ClientError:
             return False
-    
+
     raise ValueError("Error: S3 bucket name (BUCKET_NAME) has not been set.")
 
 def create_s3_bucket():
@@ -197,21 +201,7 @@ def save_file_to_s3(data, bucket_name):
     except botocore.exceptions.ClientError:
         client.create_bucket(Bucket=bucket_name,
                          CreateBucketConfiguration={'LocationConstraint': 'eu-west-2'})
-        
 
     client.put_object(Bucket=bucket_name,
                       Body=json.dumps(data),
                       Key=f'{today_date}/{timestamp}')
-    
-
-
-
-    
-    
-
-# S3 functions:
-# 1. does S3 bucket exist at all?
-# 2. if no, create one
-# 3. if yes, check how many files are in the subfolder representing today's date
-# 4. if number of files is less than 50, run and create new file
-# 5. if number of files is 50, raise error or don't run
