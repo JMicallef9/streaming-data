@@ -766,8 +766,7 @@ class TestCheckNumberOfFiles:
                            Key=f'{date}/filename')
         assert check_number_of_files(bucket_name) == 1
 
-
-    def test_returns_correct_number_if_multiple_files_located_in_folder(self, s3_mock):
+    def test_returns_correct_number_if_multiple_files_in_folder(self, s3_mock):
         bucket_name = 'guardian-api-call-tracker'
         s3_mock.create_bucket(
             Bucket=bucket_name,
@@ -794,31 +793,44 @@ class TestCheckNumberOfFiles:
         date = str(datetime.date.today())
 
         for i in range(20):
-            s3_mock.put_object(Bucket=bucket_name,
-                           Body=test_data,
-                           Key=f'{date}/filename_{i}')
+            s3_mock.put_object(
+                Bucket=bucket_name,
+                Body=test_data,
+                Key=f'{date}/filename_{i}')
         assert check_number_of_files(bucket_name) == 20
+
 
 @pytest.fixture()
 def datetime_mock():
-    """Creates a mock timestamp with different values each time it is called."""
+    """Creates mock timestamp with different values each time it is called."""
     with patch('src.utils.datetime') as mock_dt:
 
-        timestamps = ['mock_timestamp_1', 'mock_timestamp_2', 'mock_timestamp_3']
+        timestamps = [
+            'mock_timestamp_1',
+            'mock_timestamp_2',
+            'mock_timestamp_3'
+            ]
         timestamp_iterator = iter(timestamps)
 
         def generate_timestamp(arg):
             return next(timestamp_iterator)
-        
-        mock_dt.now.return_value.time.return_value.strftime.side_effect = generate_timestamp
+
+        (
+            mock_dt.now.return_value.time.return_value.strftime.side_effect
+        ) = generate_timestamp
 
         yield mock_dt
+
 
 class TestSaveFileToS3:
 
     """Tests for the save_file_to_s3 function."""
 
-    def test_saves_correct_data_to_existing_s3_bucket(self, s3_mock, test_data, datetime_mock):
+    def test_saves_correct_data_to_existing_s3_bucket(
+            self,
+            s3_mock,
+            test_data,
+            datetime_mock):
         """Checks that the correct data is saved to an S3 bucket."""
         bucket_name = 'guardian-api-call-tracker'
         date = str(datetime.date.today())
@@ -829,22 +841,21 @@ class TestSaveFileToS3:
                 'LocationConstraint': 'eu-west-2'
                 }
             )
-        
+
         save_file_to_s3(test_data, bucket_name)
 
+        response = s3_mock.get_object(
+            Bucket=bucket_name,
+            Key=f'{date}/mock_timestamp_1')['Body'].read()
 
-        response = s3_mock.get_object(Bucket=bucket_name,
-                                      Key=f'{date}/mock_timestamp_1')['Body'].read()
-        
         assert json.loads(response) == test_data
-
 
     def test_creates_bucket_and_saves_file_if_bucket_does_not_exist(
             self,
             s3_mock,
             test_data,
             datetime_mock):
-        """Ensures that the function creates an S3 bucket if one does not exist."""
+        """Ensures function creates an S3 bucket if one does not exist."""
         bucket_name = 'guardian-api-call-tracker'
         date = str(datetime.date.today())
         save_file_to_s3(test_data, bucket_name)
@@ -852,10 +863,14 @@ class TestSaveFileToS3:
         response = s3_mock.get_object(
             Bucket=bucket_name,
             Key=f'{date}/mock_timestamp_1')['Body'].read()
-        
+
         assert json.loads(response) == test_data
 
-    def test_saves_multiple_files_to_same_subfolder(self, s3_mock, test_data, datetime_mock):
+    def test_saves_multiple_files_to_same_subfolder(
+            self,
+            s3_mock,
+            test_data,
+            datetime_mock):
         """Checks that more than one file is saved to the same subfolder."""
         bucket_name = 'guardian-api-call-tracker'
         date = str(datetime.date.today())
@@ -867,7 +882,7 @@ class TestSaveFileToS3:
             )
         for _ in range(3):
             save_file_to_s3(test_data, bucket_name)
-        
+
         for i in range(1, 4):
             response = s3_mock.get_object(
                 Bucket=bucket_name,
