@@ -284,35 +284,39 @@ class TestRetrieveArticles:
 
     @patch("requests.get")
     def test_error_message_received_if_invalid_date_format_used(
-        self,
-        mock_get,
-        test_api_key):
+            self,
+            mock_get,
+            test_api_key):
         """Prints error message if user provides invalid date format."""
         mock_response = Mock()
-        mock_response.json.return_value = {"response":
-                                           {"status": "error",
-                                            "message": (
-                                                "Request Failure ElasticError(search_phase_execution"
-                                                "_exception,all shards failed,None,None,None,List"
-                                                "(ElasticError(parse_exception,failed to parse date" 
-                                                "field [201601-01-01T00:00:00.000Z] with format" 
-                                                "[dateOptionalTime]: [failed to parse date field"
-                                                "[201601-01-01T00:00:00.000Z] with format [dateOptio"
-                                                "nalTime]],None,None,None,null,None,None,None,List()))"
-                                                ",None,Some(can_match),Some(true),List(FailedShard(0,"
-                                                "Some(content),Some(uA9rRc_3SVWFDJaYMNO23A),Some(Elas"
-                                                "ticError(parse_exception,failed to parse date field "
-                                                "[201601-01-01T00:00:00.000Z] with format [dateOptionalTime]"
-                                                ": [failed to parse date field [201601-01-01T00:00:00.000Z]"
-                                                "with format [dateOptionalTime]],None,None,None,null,Some("
-                                                "CausedBy(illegal_argument_exception,failed to parse date "
-                                                "field [201601-01-01T00:00:00.000Z] with format "
-                                                "[dateOptionalTime],HashMap())),None,None,List())))))"
-                                                )
-                                            }
-                                        }
+        response = {"response": {
+            "status": "error",
+            "message": (
+                "Request Failure ElasticError(search_phase_execution"
+                "_exception,all shards failed,None,None,None,List"
+                "(ElasticError(parse_exception,failed to parse date" 
+                "field [201601-01-01T00:00:00.000Z] with format" 
+                "[dateOptionalTime]: [failed to parse date field"
+                "[201601-01-01T00:00:00.000Z] with format [dateOptio"
+                "nalTime]],None,None,None,null,None,None,None,List()))"
+                ",None,Some(can_match),Some(true),List(FailedShard(0,"
+                "Some(content),Some(uA9rRc_3SVWFDJaYMNO23A),Some(Elas"
+                "ticError(parse_exception,failed to parse date field "
+                "[201601-01-01T00:00:00.000Z] with format [dateOptionalTime]"
+                ": [failed to parse date field [201601-01-01T00:00:00.000Z]"
+                "with format [dateOptionalTime]],None,None,None,null,Some("
+                "CausedBy(illegal_argument_exception,failed to parse date "
+                "field [201601-01-01T00:00:00.000Z] with format "
+                "[dateOptionalTime],HashMap())),None,None,List())))))"
+                )
+            }
+        }
+        mock_response.json.return_value = response
         mock_get.return_value = mock_response
-        error_msg = 'Invalid date format. Please use a valid ISO format e.g. "2016-01-01" or "2016"'
+        error_msg = (
+            'Invalid date format. Please use a valid ISO format'
+            'e.g. "2016-01-01" or "2016"'
+            )
 
         with pytest.raises(ValueError) as err:
             retrieve_articles("magcon", '201601')
