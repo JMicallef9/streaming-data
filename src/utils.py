@@ -129,15 +129,16 @@ def check_bucket_exists():
 
     raise ValueError("Error: S3 bucket name (BUCKET_NAME) has not been set.")
 
+
 def create_s3_bucket():
     """
-    Creates an S3 bucket with name matching the BUCKET_NAME environment variable.
-    
+    Creates an S3 bucket with name matching environment variable.
+
     Args:
         None.
-    
+
     Returns:
-        dict: A dictionary containing information about the successfully created bucket.
+        dict: A dictionary containing information about the bucket.
     """
     bucket_name = os.getenv('BUCKET_NAME')
 
@@ -145,8 +146,11 @@ def create_s3_bucket():
 
     if bucket_name:
         try:
-            client.create_bucket(Bucket=bucket_name,
-                         CreateBucketConfiguration={'LocationConstraint': 'eu-west-2'})
+            client.create_bucket(
+                Bucket=bucket_name,
+                CreateBucketConfiguration={
+                    'LocationConstraint': 'eu-west-2'
+                    })
 
             return {'bucket_name': bucket_name, 'status': 'created'}  
         except botocore.exceptions.ClientError:

@@ -44,7 +44,7 @@ def lambda_handler(event, context):
 
     if call_count >= 50:
         return {
-            'message': 
+            'message':
             f'Rate limit exceeded. No articles published to {broker_ref}'
             }
 
