@@ -34,7 +34,7 @@ def mock_get_request():
              "pages": 3957,
              "orderBy": "newest",
              "results": [
-    {
+                 {
         "id": (
             "world/2025/mar/27/bbc-reporter-mark-lowen-"
             "arrested-and-deported-from-turkey-after-covering-protests"
@@ -61,8 +61,7 @@ def mock_get_request():
         "pillarId": "pillar/news",
         "pillarName": "News"
     },
-    {
-        "id": (
+    {"id": (
             "world/2025/mar/25/eight-journalists-covering-"
             "anti-government-protests-held-in-turkey"
         ),
@@ -87,8 +86,7 @@ def mock_get_request():
         "isHosted": False,
         "pillarId": "pillar/news",
         "pillarName": "News"
-    },
-    {
+    },{
         "id": (
             "world/2025/mar/24/journalists-among-more-than-"
             "1100-arrested-in-turkey-crackdown-istanbul"
