@@ -30,7 +30,7 @@ def retrieve_articles(query, from_date=None):
         params['from-date'] = from_date
 
     try:
-        response = requests.get(url, params=params)
+        response = requests.get(url, params=params, timeout=10)
         data = response.json()
     except requests.RequestException as e:
         raise requests.exceptions.HTTPError(f'HTTP request failed.')
