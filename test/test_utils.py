@@ -672,10 +672,10 @@ class TestCreateS3Bucket:
     @patch.dict(os.environ, {'BUCKET_NAME': 'a...'})
     @patch("boto3.client")
     def test_error_message_received_if_bucket_name_is_invalid(
-        self,
-        mock_boto_client,
-        s3_mock):
-        """Checks that an error is raised if the bucket name breaches S3 rules."""
+            self,
+            mock_boto_client,
+            s3_mock):
+        """Checks that error is raised if bucket name breaches S3 rules."""
         mock_client = mock_boto_client.return_value
         mock_client.create_bucket.side_effect = ClientError(
             error_response={
@@ -684,27 +684,35 @@ class TestCreateS3Bucket:
                     'Message': 'The specified bucket is not valid.'
                 }
             },
-        operation_name='CreateBucket')
+            operation_name='CreateBucket')
 
         with pytest.raises(ValueError) as err:
             create_s3_bucket()
         assert str(err.value) == 'Error: invalid bucket name provided.'
 
+
 class TestCheckNumberOfFiles:
     """Tests for the check_number_of_files function."""
 
     def test_returns_zero_if_no_files_in_s3_bucket(self, s3_mock):
-        """Checks that zero is returned if there are no files in the specified bucket."""
-        s3_mock.create_bucket(Bucket='guardian-api-call-tracker',
-                              CreateBucketConfiguration={'LocationConstraint': 'eu-west-2'})
+        """Checks zero is returned if no files in specified bucket."""
+        s3_mock.create_bucket(
+            Bucket='guardian-api-call-tracker',
+            CreateBucketConfiguration={
+                'LocationConstraint': 'eu-west-2'
+                }
+            )
         assert check_number_of_files('guardian-api-call-tracker') == 0
-
 
     def test_returns_zero_if_no_valid_folder_exists(self, s3_mock):
         """Checks zero is returned if today's folder not in S3 bucket."""
         bucket_name = 'guardian-api-call-tracker'
-        s3_mock.create_bucket(Bucket=bucket_name,
-                              CreateBucketConfiguration={'LocationConstraint': 'eu-west-2'})
+        s3_mock.create_bucket(
+            Bucket=bucket_name,
+            CreateBucketConfiguration={
+                'LocationConstraint': 'eu-west-2'
+                }
+            )
         test_data = json.dumps(
             [
                 {
@@ -726,12 +734,15 @@ class TestCheckNumberOfFiles:
                            Key='filename')
         assert check_number_of_files(bucket_name) == 0
 
-
     def test_returns_one_if_file_is_located_in_folder_for_today(self, s3_mock):
-        """Checks that the function returns 1 if there is a file saved under today's date."""
+        """Checks 1 is returned if file saved under today's date."""
         bucket_name = 'guardian-api-call-tracker'
-        s3_mock.create_bucket(Bucket=bucket_name,
-                              CreateBucketConfiguration={'LocationConstraint': 'eu-west-2'})
+        s3_mock.create_bucket(
+            Bucket=bucket_name,
+            CreateBucketConfiguration={
+                'LocationConstraint': 'eu-west-2'
+                }
+            )
         test_data = json.dumps(
             [
                 {
@@ -758,8 +769,12 @@ class TestCheckNumberOfFiles:
 
     def test_returns_correct_number_if_multiple_files_located_in_folder(self, s3_mock):
         bucket_name = 'guardian-api-call-tracker'
-        s3_mock.create_bucket(Bucket=bucket_name,
-                              CreateBucketConfiguration={'LocationConstraint': 'eu-west-2'})
+        s3_mock.create_bucket(
+            Bucket=bucket_name,
+            CreateBucketConfiguration={
+                'LocationConstraint': 'eu-west-2'
+                }
+            )
         test_data = json.dumps(
             [
                 {
@@ -808,8 +823,12 @@ class TestSaveFileToS3:
         bucket_name = 'guardian-api-call-tracker'
         date = str(datetime.date.today())
 
-        s3_mock.create_bucket(Bucket=bucket_name,
-                              CreateBucketConfiguration={'LocationConstraint': 'eu-west-2'})
+        s3_mock.create_bucket(
+            Bucket=bucket_name,
+            CreateBucketConfiguration={
+                'LocationConstraint': 'eu-west-2'
+                }
+            )
         
         save_file_to_s3(test_data, bucket_name)
 
@@ -820,28 +839,37 @@ class TestSaveFileToS3:
         assert json.loads(response) == test_data
 
 
-    def test_creates_bucket_and_saves_file_if_bucket_does_not_exist(self, s3_mock, test_data, datetime_mock):
+    def test_creates_bucket_and_saves_file_if_bucket_does_not_exist(
+            self,
+            s3_mock,
+            test_data,
+            datetime_mock):
         """Ensures that the function creates an S3 bucket if one does not exist."""
         bucket_name = 'guardian-api-call-tracker'
         date = str(datetime.date.today())
         save_file_to_s3(test_data, bucket_name)
 
-        response = s3_mock.get_object(Bucket=bucket_name,
-                                      Key=f'{date}/mock_timestamp_1')['Body'].read()
+        response = s3_mock.get_object(
+            Bucket=bucket_name,
+            Key=f'{date}/mock_timestamp_1')['Body'].read()
         
         assert json.loads(response) == test_data
-
 
     def test_saves_multiple_files_to_same_subfolder(self, s3_mock, test_data, datetime_mock):
         """Checks that more than one file is saved to the same subfolder."""
         bucket_name = 'guardian-api-call-tracker'
         date = str(datetime.date.today())
-        s3_mock.create_bucket(Bucket=bucket_name,
-                              CreateBucketConfiguration={'LocationConstraint': 'eu-west-2'})
+        s3_mock.create_bucket(
+            Bucket=bucket_name,
+            CreateBucketConfiguration={
+                'LocationConstraint': 'eu-west-2'
+                }
+            )
         for _ in range(3):
             save_file_to_s3(test_data, bucket_name)
         
         for i in range(1, 4):
-            response = s3_mock.get_object(Bucket=bucket_name,
-                                      Key=f'{date}/mock_timestamp_{i}')['Body'].read()
+            response = s3_mock.get_object(
+                Bucket=bucket_name,
+                Key=f'{date}/mock_timestamp_{i}')['Body'].read()
             assert json.loads(response) == test_data
