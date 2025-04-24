@@ -47,11 +47,13 @@ def mock_get_request():
                       "https://www.theguardian.com/world/2025/mar/27/"
                       "bbc-reporter-mark-lowen-arrested-and-deported-from-"
                       "turkey-after-covering-protests"),
-                  "apiUrl": """https://content.guardianapis.com/world/2025/mar/27/
-                  bbc-reporter-mark-lowen-arrested-and-deported-from-
-                  turkey-after-covering-protests""",
+                  "apiUrl": (
+                      "https://content.guardianapis.com/world/2025/mar/27/"
+                      "bbc-reporter-mark-lowen-arrested-and-deported-from-"
+                      "turkey-after-covering-protests"),
                   "isHosted": False, "pillarId": "pillar/news",
-                  "pillarName": "News"},
+                  "pillarName": "News"
+                  },
                   {"id": (
                       "world/2025/mar/25/eight-journalists-covering-"
                       "anti-government-protests-held-in-turkey"),
