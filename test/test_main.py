@@ -1,4 +1,4 @@
-from src.main import lambda_handler
+# from src.main import lambda_handler
 import pytest
 from moto import mock_aws
 import boto3
@@ -28,7 +28,7 @@ def aws_region():
     # def test_articles_published_to_message_broker_without_date(self,
     #                                                            sqs_mock,
     #                                                            aws_region):
-    #     """Checks articles are published without from_date in request body."""
+    #     """Checks articles are published without from_date in request body.
     #     test_data = {'query': 'Turkey', 'broker_ref': 'guardian_content'}
     #     assert lambda_handler(test_data, None) == {
     #         'message': '10 articles published to guardian_content.'
