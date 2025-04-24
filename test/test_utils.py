@@ -580,7 +580,7 @@ class TestPublishDataToMessageBroker:
             test_data,
             sqs_mock,
             aws_region):
-        """Checks that SQS queue has a custom retention period set of 3 days."""
+        """Checks that SQS queue has a custom retention period of 3 days."""
 
         broker_ref = "new_content"
 
@@ -592,7 +592,7 @@ class TestPublishDataToMessageBroker:
             QueueUrl=queue_url,
             AttributeNames=["All"]
             )["Attributes"]
-        
+
         assert attributes['MessageRetentionPeriod'] == "259200"
 
 
@@ -604,6 +604,7 @@ def s3_mock():
         s3 = boto3.client('s3', region_name='eu-west-2')
         yield s3
 
+
 class TestCheckBucketExists:
 
     """Tests for the check_bucket_exists function."""
@@ -614,25 +615,27 @@ class TestCheckBucketExists:
         s3_mock.create_bucket(
             Bucket=os.getenv('BUCKET_NAME'),
             CreateBucketConfiguration={'LocationConstraint': 'eu-west-2'})
-        
-        assert check_bucket_exists() == True
-    
+
+        assert check_bucket_exists() is True
+
     @patch.dict(os.environ, {'BUCKET_NAME': 'guardian-api-call-tracker'})
     def test_returns_false_if_bucket_does_not_exist(self, s3_mock):
-        """Checks that the function returns False if S3 bucket does not exist."""
-        assert check_bucket_exists() == False
+        """Checks that function returns False if S3 bucket does not exist."""
+        assert check_bucket_exists() is False
 
     def test_returns_error_message_if_bucket_name_not_provided(self, s3_mock):
         """Checks error message is received if bucket name not set."""
         with pytest.raises(ValueError) as err:
             check_bucket_exists()
-        assert str(err.value) == "Error: S3 bucket name (BUCKET_NAME) has not been set."
+        assert str(err.value) == (
+            "Error: S3 bucket name (BUCKET_NAME) has not been set."
+            )
 
 
 class TestCreateS3Bucket:
 
     """Tests for the create_s3_bucket function."""
-    
+
     @patch.dict(os.environ, {'BUCKET_NAME': 'guardian-api-call-tracker'})
     def test_creates_s3_bucket(self, s3_mock):
         """Checks that an s3 bucket has been created."""
@@ -641,7 +644,7 @@ class TestCreateS3Bucket:
         create_s3_bucket()
 
         assert len(s3_mock.list_buckets()['Buckets']) == 1
-    
+
     @patch.dict(os.environ, {'BUCKET_NAME': 'guardian-api-call-tracker'})
     def test_bucket_name_matches_environment_variable_name(self, s3_mock):
         """Checks bucket name matches the environment variable."""
@@ -655,13 +658,16 @@ class TestCreateS3Bucket:
         result = create_s3_bucket()
         assert result['bucket_name'] == 'guardian-api-call-tracker'
         assert result['status'] == 'created'
-        
 
-    def test_error_message_received_if_no_bucket_name_set_in_environment(self, s3_mock):
+    def test_error_message_received_if_no_bucket_name_set_in_environment(
+            self,
+            s3_mock):
         """Checks that an error is raised if no bucket name is set."""
         with pytest.raises(ValueError) as err:
             create_s3_bucket()
-        assert str(err.value) == "Error: S3 bucket name (BUCKET_NAME) has not been set."
+        assert str(err.value) == (
+            "Error: S3 bucket name (BUCKET_NAME) has not been set."
+            )
 
     @patch.dict(os.environ, {'BUCKET_NAME': 'a...'})
     @patch("boto3.client")
@@ -671,11 +677,13 @@ class TestCreateS3Bucket:
         s3_mock):
         """Checks that an error is raised if the bucket name breaches S3 rules."""
         mock_client = mock_boto_client.return_value
-        mock_client.create_bucket.side_effect = ClientError(error_response={'Error': {
-            'Code': 'InvalidBucketName', 
-            'Message': 'The specified bucket is not valid.'
-            }
-        },
+        mock_client.create_bucket.side_effect = ClientError(
+            error_response={
+                'Error': {
+                    'Code': 'InvalidBucketName',
+                    'Message': 'The specified bucket is not valid.'
+                }
+            },
         operation_name='CreateBucket')
 
         with pytest.raises(ValueError) as err:
