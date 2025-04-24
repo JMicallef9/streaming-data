@@ -335,7 +335,7 @@ class TestRetrieveArticles:
 
     @patch("requests.get")
     def test_error_raised_if_api_key_is_invalid(self, mock_get, test_api_key):
-        """Ensures that an error is raised if an invalid API key is provided."""
+        """Ensures error is raised if an invalid API key is provided."""
         mock_response = Mock()
         mock_response.json.return_value = {'message': 'Unauthorized'}
 
@@ -346,33 +346,39 @@ class TestRetrieveArticles:
 
         assert str(err.value) == 'Request failed. API key is invalid.'
 
-    
     @patch.dict(os.environ, {}, clear=True)
     def test_error_raised_if_no_api_key_provided(self):
-        """Ensures error is raised if there is no API key set in the envionment."""
+        """Ensures error is raised if no API key set in the envionment."""
         with pytest.raises(ValueError) as err:
             retrieve_articles("test")
         assert str(err.value) == 'Request failed. API key has not been set.'
-    
+
     def test_handles_timeout_error(self, mock_get_request, test_api_key):
-            mock_get_request.side_effect = requests.exceptions.HTTPError
-            with pytest.raises(requests.exceptions.HTTPError) as err:
-                retrieve_articles("test")
-            assert str(err.value) == 'HTTP request failed.'
+        mock_get_request.side_effect = requests.exceptions.HTTPError
+        with pytest.raises(requests.exceptions.HTTPError) as err:
+            retrieve_articles("test")
+        assert str(err.value) == 'HTTP request failed.'
+
 
 @pytest.fixture
 def test_data():
     """Creates dummy data."""
-    test_data = [{"webPublicationDate": "2023-11-21T11:11:31Z",
-                  "webTitle": "Who said what: using machine learning to correctly attribute quotes",
+    test_data = [
+        {
+            "webPublicationDate": "2023-11-21T11:11:31Z",
+            "webTitle": (
+                "Who said what: using machine learning"
+                "to correctly attribute quotes"
+            ),
                   "webUrl": (
                       "https://www.theguardian.com/info/2023/nov/21/who-said-what-"
                       "using-machine-learning-to-correctly-attribute-quotes"
                     )
-                }, 
-                  {"webPublicationDate": "2025-04-04T02:00:39Z", 
-                   "webTitle": "EU urged to put human rights centre stage at first central Asia summit",
-                   "webUrl": (
+        }, 
+        {
+            "webPublicationDate": "2025-04-04T02:00:39Z",
+            "webTitle": "EU urged to put human rights centre stage at first central Asia summit",
+            "webUrl": (
                        "https://www.theguardian.com/world/2025/apr/04/eu-"
                        "urged-to-put-human-rights-centre-stage-at-first-"
                        "central-asia-summit"
@@ -392,9 +398,16 @@ class TestPublishDataToMessageBroker:
 
     def test_publishes_single_message_to_message_broker(self, sqs_mock, aws_region):
         """Checks whether a single dictionary is successfully published to AWS SQS."""
-        test_data = [{"webPublicationDate": "2023-11-21T11:11:31Z",
-                      "webTitle": "Who said what: using machine learning to correctly attribute quotes",
-                      "webUrl": "https://www.theguardian.com/info/2023/nov/21/who-said-what-using-machine-learning-to-correctly-attribute-quotes"}]
+        test_data = [
+            {
+                "webPublicationDate": "2023-11-21T11:11:31Z",
+                "webTitle": "Who said what: using machine learning to correctly attribute quotes",
+                "webUrl": (
+                    "https://www.theguardian.com/info/2023/nov/21/who-said-what-"
+                    "using-machine-learning-to-correctly-attribute-quotes"
+                )
+            }
+        ]
         broker_reference = "guardian_content"
 
         publish_data_to_message_broker(test_data, broker_reference)
