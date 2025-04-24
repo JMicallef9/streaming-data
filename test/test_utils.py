@@ -36,8 +36,8 @@ def mock_get_request():
                 "results": [
                     {
                         "id": (
-                            "world/2025/mar/27/bbc-reporter-mark-lowen-"
-                            "arrested-and-deported-from-turkey-after-covering-protests"
+                            "world/2025/mar/27/bbc-reporter-mark-lowen-arrested"
+                            "-and-deported-from-turkey-after-covering-protests"
                         ),
                         "type": "article",
                         "sectionId": "world",
@@ -48,14 +48,14 @@ def mock_get_request():
                             "Turkey after covering protests"
                         ),
                         "webUrl": (
-                            "https://www.theguardian.com/world/2025/mar/27/"
-                            "bbc-reporter-mark-lowen-arrested-and-deported-from-"
+                            "https://www.theguardian.com/world/2025/mar/27/bbc"
+                            "-reporter-mark-lowen-arrested-and-deported-from-"
                             "turkey-after-covering-protests"
                         ),
                         "apiUrl": (
-                            "https://content.guardianapis.com/world/2025/mar/27/"
-                            "bbc-reporter-mark-lowen-arrested-and-deported-from-"
-                            "turkey-after-covering-protests"
+                            "https://content.guardianapis.com/world/2025/mar/"
+                            "27/bbc-reporter-mark-lowen-arrested-and-deported"
+                            "-from-turkey-after-covering-protests"
                         ),
                         "isHosted": False,
                         "pillarId": "pillar/news",
@@ -80,9 +80,9 @@ def mock_get_request():
                             "protests-held-in-turkey"
                         ),
                         "apiUrl": (
-                            "https://content.guardianapis.com/world/2025/mar/25/"
-                            "eight-journalists-covering-anti-government-protests-"
-                            "held-in-turkey"
+                            "https://content.guardianapis.com/world/2025/mar"
+                            "/25/eight-journalists-covering-anti-government"
+                            "-protests-held-in-turkey"
                         ),
                         "isHosted": False,
                         "pillarId": "pillar/news",
@@ -107,9 +107,9 @@ def mock_get_request():
                             "in-turkey-crackdown-istanbul"
                         ),
                         "apiUrl": (
-                            "https://content.guardianapis.com/world/2025/mar/24/"
-                            "journalists-among-more-than-1100-arrested-in-turkey"
-                            "-crackdown-istanbul"
+                            "https://content.guardianapis.com/world/2025/mar"
+                            "/24/journalists-among-more-than-1100-arrested"
+                            "-in-turkey-crackdown-istanbul"
                         ),
                         "isHosted": False,
                         "pillarId": "pillar/news",
@@ -128,7 +128,7 @@ def mock_invalid_get_request():
     with patch("requests.get") as mock_invalid_get:
         mock_response = Mock()
         mock_response.json.return_value = {
-            "response":{
+            "response": {
                 "status": "ok",
                 "userTier": "developer",
                 "total": 0,
@@ -162,14 +162,17 @@ def sqs_mock():
 class TestRetrieveArticles:
     """Tests for the retrieve_articles function."""
 
-    def test_returns_list_of_dictionaries(self, mock_get_request, test_api_key):
+    def test_returns_list_of_dicts(self, mock_get_request, test_api_key):
         """Ensures that a list of dictionaries is returned."""
         assert isinstance(retrieve_articles("test"), list)
-    
-    def test_returns_correct_number_of_articles(self, mock_get_request, test_api_key):
+
+    def test_returns_correct_number_of_articles(
+            self,
+            mock_get_request,
+            test_api_key):
         """Ensures that a list of the correct length is returned."""
         assert len(retrieve_articles("test")) == 3
-    
+
     def test_list_items_contain_correct_dictionary_keys(self, mock_get_request, test_api_key):
         """Ensures that the correct information about each article is returned."""
         articles = retrieve_articles("test")
@@ -192,7 +195,6 @@ class TestRetrieveArticles:
             url_pattern = r"^https://www.theguardian.com/"
             assert re.search(url_pattern, url)
 
-
     def test_list_values_are_accurate(self, mock_get_request, test_api_key):
         """Uses a controlled test input to check that the correct information is returned."""
         articles = retrieve_articles("test")
@@ -214,13 +216,11 @@ class TestRetrieveArticles:
             "https://www.theguardian.com/world/2025/mar/25/"
             "eight-journalists-covering-anti-government-protests-held-in-turkey")
 
-
     def test_returns_empty_list_if_invalid_query(self, mock_invalid_get_request, test_api_key):
         """Checks for an empty list if the query produces no results."""
         articles = retrieve_articles("qqqsdfgad")
 
         assert not articles
-
 
     def test_articles_are_not_rearranged(self, mock_get_request, test_api_key):
         """Ensures that the function preserves the order in which articles are retrieved from the API."""
@@ -231,13 +231,11 @@ class TestRetrieveArticles:
 
         assert dates == ["2025-03-27T18:18:12Z", "2025-03-25T16:38:14Z", "2025-03-24T17:04:13Z"]
 
-
     def test_request_includes_order_by_parameter(self, mock_get_request, test_api_key):
         """Ensures that the order-by parameter is included in API requests."""
         retrieve_articles("turkey")
         args, kwargs = mock_get_request.call_args
         assert kwargs["params"]["order-by"] == 'newest'
-
 
     def test_request_includes_from_date_parameter(self, mock_get_request, test_api_key):
         """Ensures that the date-from parameter is included in API requests."""
