@@ -249,14 +249,14 @@ class TestRetrieveArticles:
         dates = [article['webPublicationDate'] for article in articles]
 
         assert dates == [
-            "2025-03-27T18:18:12Z", 
-            "2025-03-25T16:38:14Z", 
+            "2025-03-27T18:18:12Z",
+            "2025-03-25T16:38:14Z",
             "2025-03-24T17:04:13Z"
             ]
 
     def test_request_includes_order_by_parameter(
-            self, 
-            mock_get_request, 
+            self,
+            mock_get_request,
             test_api_key):
         """Ensures that the order-by parameter is included in API requests."""
         retrieve_articles("turkey")
@@ -264,18 +264,17 @@ class TestRetrieveArticles:
         assert kwargs["params"]["order-by"] == 'newest'
 
     def test_request_includes_from_date_parameter(
-            self, 
-            mock_get_request, 
+            self,
+            mock_get_request,
             test_api_key):
         """Ensures that date-from parameter is included in API requests."""
         retrieve_articles("magcon", "2016-01-01")
         args, kwargs = mock_get_request.call_args
         assert kwargs["params"]["from-date"] == '2016-01-01'
 
-
     def test_from_date_omitted_from_request_if_not_provided(
-            self, 
-            mock_get_request, 
+            self,
+            mock_get_request,
             test_api_key):
         """Ensures that date_from parameter is omitted if not provided."""
 
@@ -285,8 +284,8 @@ class TestRetrieveArticles:
 
     @patch("requests.get")
     def test_error_message_received_if_invalid_date_format_used(
-        self, 
-        mock_get, 
+        self,
+        mock_get,
         test_api_key):
         """Prints error message if user provides invalid date format."""
         mock_response = Mock()
