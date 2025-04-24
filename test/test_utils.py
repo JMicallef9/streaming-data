@@ -294,8 +294,8 @@ class TestRetrieveArticles:
             "message": (
                 "Request Failure ElasticError(search_phase_execution"
                 "_exception,all shards failed,None,None,None,List"
-                "(ElasticError(parse_exception,failed to parse date" 
-                "field [201601-01-01T00:00:00.000Z] with format" 
+                "(ElasticError(parse_exception,failed to parse date"
+                "field [201601-01-01T00:00:00.000Z] with format"
                 "[dateOptionalTime]: [failed to parse date field"
                 "[201601-01-01T00:00:00.000Z] with format [dateOptio"
                 "nalTime]],None,None,None,null,None,None,None,List()))"
@@ -320,11 +320,13 @@ class TestRetrieveArticles:
 
         with pytest.raises(ValueError) as err:
             retrieve_articles("magcon", '201601')
-        
+
         assert str(err.value) == error_msg
 
-
-    def test_handles_multiword_search_terms(self, mock_get_request, test_api_key):
+    def test_handles_multiword_search_terms(
+            self,
+            mock_get_request,
+            test_api_key):
         """Ensures that the function handles search terms of multiple words."""
         retrieve_articles("machine learning")
 
@@ -363,10 +365,20 @@ def test_data():
     """Creates dummy data."""
     test_data = [{"webPublicationDate": "2023-11-21T11:11:31Z",
                   "webTitle": "Who said what: using machine learning to correctly attribute quotes",
-                  "webUrl": "https://www.theguardian.com/info/2023/nov/21/who-said-what-using-machine-learning-to-correctly-attribute-quotes"}, 
-                  {"webPublicationDate":"2025-04-04T02:00:39Z", 
-                   "webTitle":"EU urged to put human rights centre stage at first central Asia summit",
-                   "webUrl":"https://www.theguardian.com/world/2025/apr/04/eu-urged-to-put-human-rights-centre-stage-at-first-central-asia-summit"}]
+                  "webUrl": (
+                      "https://www.theguardian.com/info/2023/nov/21/who-said-what-"
+                      "using-machine-learning-to-correctly-attribute-quotes"
+                    )
+                }, 
+                  {"webPublicationDate": "2025-04-04T02:00:39Z", 
+                   "webTitle": "EU urged to put human rights centre stage at first central Asia summit",
+                   "webUrl": (
+                       "https://www.theguardian.com/world/2025/apr/04/eu-"
+                       "urged-to-put-human-rights-centre-stage-at-first-"
+                       "central-asia-summit"
+                       )
+                    }
+                ]
     yield test_data
 
 @pytest.fixture
