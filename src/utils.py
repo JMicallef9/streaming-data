@@ -43,8 +43,8 @@ def retrieve_articles(query, from_date=None):
 
     if not isinstance(result, list):
         raise ValueError(
-            '''Invalid date format.
-            Please use a valid ISO format e.g. "2016-01-01" or "2016"'''
+            'Invalid date format. '
+            'Please use a valid ISO format e.g. "2016-01-01" or "2016"'
             )
 
     articles = []
@@ -72,8 +72,8 @@ def publish_data_to_message_broker(data, broker_ref):
         int: The number of articles successfully published.
     """
     if not os.getenv("AWS_REGION"):
-        raise ValueError('''Request failed.
-                         AWS region has not been specified.''')
+        raise ValueError('Request failed. '
+                         'AWS region has not been specified.')
 
     client = boto3.client('sqs', region_name=os.getenv("AWS_REGION"))
 
@@ -102,8 +102,8 @@ def publish_data_to_message_broker(data, broker_ref):
         return count
 
     else:
-        raise ValueError('''Invalid data type.
-                         Input must be a list of dictionaries.''')
+        raise ValueError('Invalid data type. '
+                         'Input must be a list of dictionaries.')
 
 
 def check_bucket_exists():
@@ -152,9 +152,9 @@ def create_s3_bucket():
                     'LocationConstraint': 'eu-west-2'
                     })
 
-            return {'bucket_name': bucket_name, 'status': 'created'}  
+            return {'bucket_name': bucket_name, 'status': 'created'}
         except botocore.exceptions.ClientError:
-            raise ValueError("Error: invalid bucket name provided.") 
+            raise ValueError("Error: invalid bucket name provided.")
 
     raise ValueError("Error: S3 bucket name (BUCKET_NAME) has not been set.")
 
@@ -165,7 +165,7 @@ def check_number_of_files(bucket_name):
 
     Args:
         bucket_name (str): The name of an S3 bucket.
-    
+
     Returns:
         int: The number of files saved under today's date in the S3 bucket.
     """
@@ -186,12 +186,12 @@ def check_number_of_files(bucket_name):
 
 def save_file_to_s3(data, bucket_name):
     """
-    Saves a file to an S3 bucket with information about the articles published to SQS.
-    
+    Saves a file to an S3 bucket with information about articles.
+
     Args:
         data (list): A list of articles retrieved from an API.
         bucket_name (str): The S3 bucket in which the file should be saved.
-    
+
     Returns:
         None.
     """
@@ -203,8 +203,11 @@ def save_file_to_s3(data, bucket_name):
     try:
         client.head_bucket(Bucket=bucket_name)
     except botocore.exceptions.ClientError:
-        client.create_bucket(Bucket=bucket_name,
-                         CreateBucketConfiguration={'LocationConstraint': 'eu-west-2'})
+        client.create_bucket(
+            Bucket=bucket_name,
+            CreateBucketConfiguration={
+                'LocationConstraint': 'eu-west-2'
+                })
 
     client.put_object(Bucket=bucket_name,
                       Body=json.dumps(data),

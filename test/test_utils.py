@@ -34,38 +34,52 @@ def mock_get_request():
              "pages": 3957,
              "orderBy": "newest",
              "results": [
-                 {"id": '''world/2025/mar/27/bbc-reporter-mark-
-                  lowen-arrested-and-deported-from-turkey-after-covering-protests''',
-                  "type": "article","sectionId": "world",
+                 {"id": '''world/2025/mar/27/bbc-reporter-mark-lowen-
+                  arrested-and-deported-from-turkey-after-covering-protests''',
+                  "type": "article",
+                  "sectionId": "world",
                   "sectionName": "World news",
                   "webPublicationDate": "2025-03-27T18:18:12Z",
-                  "webTitle":'''BBC reporter arrested and deported from
-                  Turkey after covering protests''',
-                  "webUrl": """https://www.theguardian.com/world/2025/mar/27/
-                  bbc-reporter-mark-lowen-arrested-and-deported-from-turkey-after-covering-protests""",
+                  "webTitle":('BBC reporter arrested and deported from '
+                  'Turkey after covering protests'),
+                  "webUrl": ("https://www.theguardian.com/world/2025/mar/27/"
+                  "bbc-reporter-mark-lowen-arrested-and-deported-from-"
+                  "turkey-after-covering-protests"),
                   "apiUrl": """https://content.guardianapis.com/world/2025/mar/27/
-                  bbc-reporter-mark-lowen-arrested-and-deported-from-turkey-after-covering-protests""",
-                  "isHosted": False,"pillarId": "pillar/news","pillarName": "News"
+                  bbc-reporter-mark-lowen-arrested-and-deported-from-
+                  turkey-after-covering-protests""",
+                  "isHosted": False, "pillarId": "pillar/news",
+                  "pillarName": "News"
                   },
-                  {"id": "world/2025/mar/25/eight-journalists-covering-anti-government-protests-held-in-turkey",
+                  {"id": """world/2025/mar/25/eight-journalists-covering-
+                   anti-government-protests-held-in-turkey""",
                    "type": "article",
                    "sectionId": "world",
                    "sectionName": "World news",
                    "webPublicationDate": "2025-03-25T16:38:14Z",
-                   "webTitle": "Eight journalists covering anti-government protests held in Turkey",
-                   "webUrl": "https://www.theguardian.com/world/2025/mar/25/eight-journalists-covering-anti-government-protests-held-in-turkey",
-                   "apiUrl": "https://content.guardianapis.com/world/2025/mar/25/eight-journalists-covering-anti-government-protests-held-in-turkey",
+                   "webTitle": (
+                       "Eight journalists covering anti-government "
+                       "protests held in Turkey"),
+                   "webUrl": (
+                       "https://www.theguardian.com/world/2025/mar/25/"
+                       "eight-journalists-covering-anti-government-protests-held-in-turkey"),
+                   "apiUrl": (
+                       "https://content.guardianapis.com/world/2025/mar/25/"
+                       "eight-journalists-covering-anti-government-protests-held-in-turkey"),
                    "isHosted": False,
                    "pillarId": "pillar/news",
                    "pillarName": "News"},
-                   {"id":"world/2025/mar/24/journalists-among-more-than-1100-arrested-in-turkey-crackdown-istanbul",
+                   {"id":"""world/2025/mar/24/journalists-among-more-than-
+                    1100-arrested-in-turkey-crackdown-istanbul""",
                     "type": "article",
                     "sectionId": "world",
                     "sectionName": "World news",
                     "webPublicationDate": "2025-03-24T17:04:13Z",
                     "webTitle": "Journalists among more than 1,100 arrested in Turkey crackdown",
-                    "webUrl": "https://www.theguardian.com/world/2025/mar/24/journalists-among-more-than-1100-arrested-in-turkey-crackdown-istanbul",
-                    "apiUrl": "https://content.guardianapis.com/world/2025/mar/24/journalists-among-more-than-1100-arrested-in-turkey-crackdown-istanbul",
+                    "webUrl": """https://www.theguardian.com/world/2025/mar/24/
+                    journalists-among-more-than-1100-arrested-in-turkey-crackdown-istanbul""",
+                    "apiUrl": """https://content.guardianapis.com/world/2025/mar/24/
+                    journalists-among-more-than-1100-arrested-in-turkey-crackdown-istanbul""",
                     "isHosted": False,"pillarId": "pillar/news",
                     "pillarName": "News"
                     }]}}
@@ -77,7 +91,17 @@ def mock_invalid_get_request():
     """Creates a test response body for an invalid request."""
     with patch("requests.get") as mock_invalid_get:
         mock_response = Mock()
-        mock_response.json.return_value = {"response":{"status":"ok","userTier":"developer","total":0,"startIndex":0,"pageSize":10,"currentPage":1,"pages":0,"orderBy":"relevance","results":[]}}
+        mock_response.json.return_value = {
+            "response":{
+                "status": "ok",
+                "userTier": "developer",
+                "total": 0,
+                "startIndex": 0,
+                "pageSize": 10,
+                "currentPage": 1,
+                "pages": 0,
+                "orderBy": "relevance",
+                "results": []}}
         mock_invalid_get.return_value = mock_response
         yield mock_invalid_get
 
@@ -135,12 +159,21 @@ class TestRetrieveArticles:
         articles = retrieve_articles("test")
 
         assert articles[0]['webPublicationDate'] == "2025-03-27T18:18:12Z"
-        assert articles[0]['webTitle'] == "BBC reporter arrested and deported from Turkey after covering protests"
-        assert articles[0]['webUrl'] == "https://www.theguardian.com/world/2025/mar/27/bbc-reporter-mark-lowen-arrested-and-deported-from-turkey-after-covering-protests"
+        assert articles[0]['webTitle'] == (
+            "BBC reporter arrested and deported from Turkey "
+            "after covering protests")
+        assert articles[0]['webUrl'] == (
+            "https://www.theguardian.com/world/2025/mar/27/"
+            "bbc-reporter-mark-lowen-arrested-and-deported-"
+            "from-turkey-after-covering-protests")
 
         assert articles[1]['webPublicationDate'] == "2025-03-25T16:38:14Z"
-        assert articles[1]['webTitle'] == "Eight journalists covering anti-government protests held in Turkey"
-        assert articles[1]['webUrl'] == "https://www.theguardian.com/world/2025/mar/25/eight-journalists-covering-anti-government-protests-held-in-turkey"
+        assert articles[1]['webTitle'] == (
+            "Eight journalists covering anti-government protests held in Turkey"
+            )
+        assert articles[1]['webUrl'] == (
+            "https://www.theguardian.com/world/2025/mar/25/"
+            "eight-journalists-covering-anti-government-protests-held-in-turkey")
 
     def test_returns_empty_list_if_invalid_query(self, mock_invalid_get_request, test_api_key):
         """Checks for an empty list if the query produces no results."""
