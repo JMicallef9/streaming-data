@@ -40,7 +40,7 @@ coverage:
 	$(call execute_in_env, $(PIP) install coverage)
 
 
-dev-setup: setupreq bandit flake8
+dev-setup: setupreq bandit flake8 coverage
 
 ## Run bandit
 run-bandit:
