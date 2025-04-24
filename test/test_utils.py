@@ -424,9 +424,9 @@ class TestPublishDataToMessageBroker:
 
         publish_data_to_message_broker(test_data, broker_reference)
 
-        queue_url = sqs_mock.get_queue_url(QueueName=broker_reference)['QueueUrl']
+        queue = sqs_mock.get_queue_url(QueueName=broker_reference)['QueueUrl']
 
-        response = sqs_mock.receive_message(QueueUrl=queue_url)
+        response = sqs_mock.receive_message(QueueUrl=queue)
 
         message = response['Messages'][0]['Body']
 
@@ -434,18 +434,26 @@ class TestPublishDataToMessageBroker:
 
         assert test_data[0] == extracted_data
 
-    def test_publishes_multiple_messages_to_message_broker(self, sqs_mock, test_data, aws_region):
-        """Checks whether multiple dictionaries are successfully published to AWS SQS."""
+    def test_publishes_multiple_messages_to_message_broker(
+            self,
+            sqs_mock,
+            test_data,
+            aws_region):
+        """Checks whether multiple dictionaries are published to SQS."""
 
-        broker_reference = "guardian_content"
+        broker_ref = "guardian_content"
 
-        publish_data_to_message_broker(test_data, broker_reference)
+        publish_data_to_message_broker(test_data, broker_ref)
 
-        queue_url = sqs_mock.get_queue_url(QueueName=broker_reference)['QueueUrl']
+        queue_url = sqs_mock.get_queue_url(QueueName=broker_ref)['QueueUrl']
 
-        response = sqs_mock.receive_message(QueueUrl=queue_url, MaxNumberOfMessages=2)
+        response = sqs_mock.receive_message(
+            QueueUrl=queue_url,
+            MaxNumberOfMessages=2)
 
-        received_messages = [json.loads(message['Body']) for message in response['Messages']]
+        received_messages = [
+            json.loads(message['Body']) for message in response['Messages']
+            ]
 
         for item in test_data:
             assert item in received_messages
