@@ -175,8 +175,8 @@ class TestRetrieveArticles:
         assert len(retrieve_articles("test")) == 3
 
     def test_list_items_contain_correct_dictionary_keys(
-            self, 
-            mock_get_request, 
+            self,
+            mock_get_request,
             test_api_key):
         """Ensures correct information about each article is returned."""
         articles = retrieve_articles("test")
@@ -188,8 +188,8 @@ class TestRetrieveArticles:
                 ]
 
     def test_list_items_contain_appropriate_values(
-            self, 
-            mock_get_request, 
+            self,
+            mock_get_request,
             test_api_key):
         """Ensures that the correct values are returned for each article."""
         articles = retrieve_articles("test")
@@ -207,7 +207,7 @@ class TestRetrieveArticles:
             assert re.search(url_pattern, url)
 
     def test_list_values_are_accurate(self, mock_get_request, test_api_key):
-        """Uses controlled test input to check correct information is returned."""
+        """Uses test input to check correct information is returned."""
         articles = retrieve_articles("test")
 
         assert articles[0]['webPublicationDate'] == "2025-03-27T18:18:12Z"
@@ -221,19 +221,27 @@ class TestRetrieveArticles:
 
         assert articles[1]['webPublicationDate'] == "2025-03-25T16:38:14Z"
         assert articles[1]['webTitle'] == (
-            "Eight journalists covering anti-government protests held in Turkey"
+            "Eight journalists covering anti-government"
+            "protests held in Turkey"
             )
         assert articles[1]['webUrl'] == (
             "https://www.theguardian.com/world/2025/mar/25/"
-            "eight-journalists-covering-anti-government-protests-held-in-turkey")
+            "eight-journalists-covering-anti-government-"
+            "protests-held-in-turkey")
 
-    def test_returns_empty_list_if_invalid_query(self, mock_invalid_get_request, test_api_key):
+    def test_returns_empty_list_if_invalid_query(
+            self,
+            mock_invalid_get_request,
+            test_api_key):
         """Checks for an empty list if the query produces no results."""
         articles = retrieve_articles("qqqsdfgad")
 
         assert not articles
 
-    def test_articles_are_not_rearranged(self, mock_get_request, test_api_key):
+    def test_articles_are_not_rearranged(
+            self,
+            mock_get_request,
+            test_api_key):
         """Ensures that article order is preserved."""
 
         articles = retrieve_articles("turkey")
