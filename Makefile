@@ -26,7 +26,7 @@ define execute_in_env
 endef
 
 # Set Up
-## Install bandit and flake8
+## Install bandit, flake8 and coverage
 setupreq:
 	$(call execute_in_env, $(PIP) install -r ./requirements.txt)
 
@@ -35,6 +35,9 @@ bandit:
 
 flake8:
 	$(call execute_in_env, $(PIP) install flake8)
+
+coverage:
+	$(call execute_in_env, $(PIP) install coverage)
 
 
 dev-setup: setupreq bandit flake8
