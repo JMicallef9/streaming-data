@@ -36,8 +36,9 @@ def mock_get_request():
                 "results": [
                     {
                         "id": (
-                            "world/2025/mar/27/bbc-reporter-mark-lowen-arrested"
-                            "-and-deported-from-turkey-after-covering-protests"
+                            "world/2025/mar/27/bbc-reporter-mark-lowen-"
+                            "arrested-and-deported-from-turkey-after"
+                            "-covering-protests"
                         ),
                         "type": "article",
                         "sectionId": "world",
@@ -173,13 +174,23 @@ class TestRetrieveArticles:
         """Ensures that a list of the correct length is returned."""
         assert len(retrieve_articles("test")) == 3
 
-    def test_list_items_contain_correct_dictionary_keys(self, mock_get_request, test_api_key):
-        """Ensures that the correct information about each article is returned."""
+    def test_list_items_contain_correct_dictionary_keys(
+            self, 
+            mock_get_request, 
+            test_api_key):
+        """Ensures correct information about each article is returned."""
         articles = retrieve_articles("test")
         for article in articles:
-            assert list(article.keys()) == ['webPublicationDate', 'webTitle', 'webUrl']
-        
-    def test_list_items_contain_appropriate_values(self, mock_get_request, test_api_key):
+            assert list(article.keys()) == [
+                'webPublicationDate',
+                'webTitle',
+                'webUrl'
+                ]
+
+    def test_list_items_contain_appropriate_values(
+            self, 
+            mock_get_request, 
+            test_api_key):
         """Ensures that the correct values are returned for each article."""
         articles = retrieve_articles("test")
 
@@ -196,7 +207,7 @@ class TestRetrieveArticles:
             assert re.search(url_pattern, url)
 
     def test_list_values_are_accurate(self, mock_get_request, test_api_key):
-        """Uses a controlled test input to check that the correct information is returned."""
+        """Uses controlled test input to check correct information is returned."""
         articles = retrieve_articles("test")
 
         assert articles[0]['webPublicationDate'] == "2025-03-27T18:18:12Z"
@@ -223,46 +234,83 @@ class TestRetrieveArticles:
         assert not articles
 
     def test_articles_are_not_rearranged(self, mock_get_request, test_api_key):
-        """Ensures that the function preserves the order in which articles are retrieved from the API."""
+        """Ensures that article order is preserved."""
 
         articles = retrieve_articles("turkey")
 
         dates = [article['webPublicationDate'] for article in articles]
 
-        assert dates == ["2025-03-27T18:18:12Z", "2025-03-25T16:38:14Z", "2025-03-24T17:04:13Z"]
+        assert dates == [
+            "2025-03-27T18:18:12Z", 
+            "2025-03-25T16:38:14Z", 
+            "2025-03-24T17:04:13Z"
+            ]
 
-    def test_request_includes_order_by_parameter(self, mock_get_request, test_api_key):
+    def test_request_includes_order_by_parameter(
+            self, 
+            mock_get_request, 
+            test_api_key):
         """Ensures that the order-by parameter is included in API requests."""
         retrieve_articles("turkey")
         args, kwargs = mock_get_request.call_args
         assert kwargs["params"]["order-by"] == 'newest'
 
-    def test_request_includes_from_date_parameter(self, mock_get_request, test_api_key):
-        """Ensures that the date-from parameter is included in API requests."""
+    def test_request_includes_from_date_parameter(
+            self, 
+            mock_get_request, 
+            test_api_key):
+        """Ensures that date-from parameter is included in API requests."""
         retrieve_articles("magcon", "2016-01-01")
         args, kwargs = mock_get_request.call_args
         assert kwargs["params"]["from-date"] == '2016-01-01'
 
 
-    def test_from_date_omitted_from_request_if_not_provided(self, mock_get_request, test_api_key):
-        """Ensures that date_from parameter is omitted from the request if not provided by the user."""
+    def test_from_date_omitted_from_request_if_not_provided(
+            self, 
+            mock_get_request, 
+            test_api_key):
+        """Ensures that date_from parameter is omitted if not provided."""
 
         retrieve_articles("magcon")
         args, kwargs = mock_get_request.call_args
         assert "from-date" not in list(kwargs["params"].keys())
 
     @patch("requests.get")
-    def test_error_message_received_if_invalid_date_format_used(self, mock_get, test_api_key):
+    def test_error_message_received_if_invalid_date_format_used(
+        self, 
+        mock_get, 
+        test_api_key):
         """Prints error message if user provides invalid date format."""
         mock_response = Mock()
         mock_response.json.return_value = {"response":
-                                           {"status":"error","message":"Request Failure ElasticError(search_phase_execution_exception,all shards failed,None,None,None,List(ElasticError(parse_exception,failed to parse date field [201601-01-01T00:00:00.000Z] with format [dateOptionalTime]: [failed to parse date field [201601-01-01T00:00:00.000Z] with format [dateOptionalTime]],None,None,None,null,None,None,None,List())),None,Some(can_match),Some(true),List(FailedShard(0,Some(content),Some(uA9rRc_3SVWFDJaYMNO23A),Some(ElasticError(parse_exception,failed to parse date field [201601-01-01T00:00:00.000Z] with format [dateOptionalTime]: [failed to parse date field [201601-01-01T00:00:00.000Z] with format [dateOptionalTime]],None,None,None,null,Some(CausedBy(illegal_argument_exception,failed to parse date field [201601-01-01T00:00:00.000Z] with format [dateOptionalTime],HashMap())),None,None,List())))))"}}
+                                           {"status": "error",
+                                            "message": (
+                                                "Request Failure ElasticError(search_phase_execution"
+                                                "_exception,all shards failed,None,None,None,List"
+                                                "(ElasticError(parse_exception,failed to parse date" 
+                                                "field [201601-01-01T00:00:00.000Z] with format" 
+                                                "[dateOptionalTime]: [failed to parse date field"
+                                                "[201601-01-01T00:00:00.000Z] with format [dateOptio"
+                                                "nalTime]],None,None,None,null,None,None,None,List()))"
+                                                ",None,Some(can_match),Some(true),List(FailedShard(0,"
+                                                "Some(content),Some(uA9rRc_3SVWFDJaYMNO23A),Some(Elas"
+                                                "ticError(parse_exception,failed to parse date field "
+                                                "[201601-01-01T00:00:00.000Z] with format [dateOptionalTime]"
+                                                ": [failed to parse date field [201601-01-01T00:00:00.000Z]"
+                                                "with format [dateOptionalTime]],None,None,None,null,Some("
+                                                "CausedBy(illegal_argument_exception,failed to parse date "
+                                                "field [201601-01-01T00:00:00.000Z] with format "
+                                                "[dateOptionalTime],HashMap())),None,None,List())))))"
+                                                )
+                                            }
+                                        }
         mock_get.return_value = mock_response
+        error_msg = 'Invalid date format. Please use a valid ISO format e.g. "2016-01-01" or "2016"'
 
         with pytest.raises(ValueError) as err:
             retrieve_articles("magcon", '201601')
-
-        assert str(err.value) == 'Invalid date format. Please use a valid ISO format e.g. "2016-01-01" or "2016"'
+        
+        assert str(err.value) == error_msg
 
 
     def test_handles_multiword_search_terms(self, mock_get_request, test_api_key):
@@ -288,7 +336,7 @@ class TestRetrieveArticles:
     
     @patch.dict(os.environ, {}, clear=True)
     def test_error_raised_if_no_api_key_provided(self):
-        """Ensures that an error is raised if there is no API key set in the envionment."""
+        """Ensures error is raised if there is no API key set in the envionment."""
         with pytest.raises(ValueError) as err:
             retrieve_articles("test")
         assert str(err.value) == 'Request failed. API key has not been set.'
@@ -303,8 +351,11 @@ class TestRetrieveArticles:
 def test_data():
     """Creates dummy data."""
     test_data = [{"webPublicationDate": "2023-11-21T11:11:31Z",
-                      "webTitle": "Who said what: using machine learning to correctly attribute quotes",
-                      "webUrl": "https://www.theguardian.com/info/2023/nov/21/who-said-what-using-machine-learning-to-correctly-attribute-quotes"}, {"webPublicationDate":"2025-04-04T02:00:39Z", "webTitle":"EU urged to put human rights centre stage at first central Asia summit","webUrl":"https://www.theguardian.com/world/2025/apr/04/eu-urged-to-put-human-rights-centre-stage-at-first-central-asia-summit"}]
+                  "webTitle": "Who said what: using machine learning to correctly attribute quotes",
+                  "webUrl": "https://www.theguardian.com/info/2023/nov/21/who-said-what-using-machine-learning-to-correctly-attribute-quotes"}, 
+                  {"webPublicationDate":"2025-04-04T02:00:39Z", 
+                   "webTitle":"EU urged to put human rights centre stage at first central Asia summit",
+                   "webUrl":"https://www.theguardian.com/world/2025/apr/04/eu-urged-to-put-human-rights-centre-stage-at-first-central-asia-summit"}]
     yield test_data
 
 @pytest.fixture
@@ -361,7 +412,10 @@ class TestPublishDataToMessageBroker:
 
         new_data = [{"webPublicationDate": "2021-11-21T11:11:31Z",
                       "webTitle": "new: using machine learning to correctly attribute quotes",
-                      "webUrl": "https://www.theguardian.com/info/2021/nov/21/who-said-what-using-machine-learning-to-correctly-attribute-quotes"}, {"webPublicationDate":"2021-04-04T02:00:39Z", "webTitle":"new EU urged to put human rights centre stage at first central Asia summit","webUrl":"https://www.theguardian.com/world/2021/apr/04/eu-urged-to-put-human-rights-centre-stage-at-first-central-asia-summit"}]
+                      "webUrl": "https://www.theguardian.com/info/2021/nov/21/who-said-what-using-machine-learning-to-correctly-attribute-quotes"}, 
+                      {"webPublicationDate":"2021-04-04T02:00:39Z",
+                       "webTitle":"new EU urged to put human rights centre stage at first central Asia summit",
+                       "webUrl":"https://www.theguardian.com/world/2021/apr/04/eu-urged-to-put-human-rights-centre-stage-at-first-central-asia-summit"}]
 
         publish_data_to_message_broker(new_data, broker_reference)
 
@@ -376,7 +430,7 @@ class TestPublishDataToMessageBroker:
 
 
     def test_publishes_messages_to_new_queue(self, sqs_mock, test_data, aws_region):
-        """Checks whether messages are successfully published to a queue that does not yet exist."""
+        """Checks messages are successfully published to new queue."""
 
         broker_reference = "new_content"
 
@@ -491,7 +545,8 @@ class TestCreateS3Bucket:
     def test_bucket_name_matches_environment_variable_name(self, s3_mock):
         """Checks that the bucket name of the created bucket matches the environment variable."""
         create_s3_bucket()
-        assert s3_mock.head_bucket(Bucket='guardian-api-call-tracker')['ResponseMetadata']['HTTPStatusCode'] == 200
+        response = s3_mock.head_bucket(Bucket='guardian-api-call-tracker')
+        assert response['ResponseMetadata']['HTTPStatusCode'] == 200
 
     @patch.dict(os.environ, {'BUCKET_NAME': 'guardian-api-call-tracker'})
     def test_returns_status_message(self, s3_mock):
@@ -512,8 +567,13 @@ class TestCreateS3Bucket:
     def test_error_message_received_if_bucket_name_is_invalid(self, mock_boto_client, s3_mock):
         """Checks that an error is raised if the bucket name breaches S3 rules."""
         mock_client = mock_boto_client.return_value
-        mock_client.create_bucket.side_effect = ClientError(error_response={'Error': {'Code': 'InvalidBucketName', 'Message': 'The specified bucket is not valid.'}},
-                                                            operation_name='CreateBucket')
+        mock_client.create_bucket.side_effect = ClientError(error_response={'Error': {
+            'Code': 'InvalidBucketName', 
+            'Message': 'The specified bucket is not valid.'
+            }
+        },
+        operation_name='CreateBucket')
+
         with pytest.raises(ValueError) as err:
             create_s3_bucket()
         assert str(err.value) == 'Error: invalid bucket name provided.'
@@ -634,32 +694,3 @@ class TestSaveFileToS3:
             response = s3_mock.get_object(Bucket=bucket_name,
                                       Key=f'{date}/mock_timestamp_{i}')['Body'].read()
             assert json.loads(response) == test_data
-
-
-
-        
-
-
-
-        
-
-        
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-
-
-
-        
