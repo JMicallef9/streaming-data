@@ -494,7 +494,7 @@ class TestPublishDataToMessageBroker:
                 )
             }
         ]
-    
+
         publish_data_to_message_broker(new_data, broker_ref)
 
         queue_url = sqs_mock.get_queue_url(QueueName=broker_ref)['QueueUrl']
@@ -534,32 +534,39 @@ class TestPublishDataToMessageBroker:
         for item in received_messages:
             assert item in test_data
 
-
     def test_error_raised_if_invalid_input(self, sqs_mock, aws_region):
         """Checks that an error is raised if data has incorrect data type."""
         broker_reference = "new_content"
         test_data = [['PublicationDate', 'url']]
         with pytest.raises(ValueError) as err:
             publish_data_to_message_broker(test_data, broker_reference)
-        assert str(err.value) == 'Invalid data type. Input must be a list of dictionaries.'
+        assert str(err.value) == (
+            'Invalid data type. Input must be a list of dictionaries.'
+            )
 
-
-    def test_error_raised_if_region_not_set_in_environment(self, sqs_mock, test_data):
-        """Checks that an error is raised if region not set as environment variable."""
+    def test_error_raised_if_region_not_set_in_environment(
+            self,
+            sqs_mock,
+            test_data):
+        """Checks error is raised if region not set in environment."""
         broker_reference = "new_content"
 
         with pytest.raises(ValueError) as err:
             publish_data_to_message_broker(test_data, broker_reference)
-        assert str(err.value) == 'Request failed. AWS region has not been specified.'
+        assert str(err.value) == (
+            'Request failed. AWS region has not been specified.'
+            )
 
-
-    def test_returns_number_of_articles_published(self, sqs_mock, test_data, aws_region):
-        """Ensures that the function returns the number of articles published."""
+    def test_returns_number_of_articles_published(
+            self,
+            sqs_mock,
+            test_data,
+            aws_region):
+        """Ensures function returns the number of articles published."""
 
         broker_reference = "new_content"
 
         assert publish_data_to_message_broker(test_data, broker_reference) == 2
-
 
     def test_returns_zero_if_no_articles_published(self, sqs_mock, aws_region):
         """Ensures that the function returns zero if passed an empty list."""
@@ -568,9 +575,12 @@ class TestPublishDataToMessageBroker:
         test_data = []
         assert publish_data_to_message_broker(test_data, broker_reference) == 0
 
-
-    def test_queue_created_with_correct_retention_period(self, test_data, sqs_mock, aws_region):
-        """Checks that the SQS queue has a custom retention period set of 3 days."""
+    def test_queue_created_with_correct_retention_period(
+            self,
+            test_data,
+            sqs_mock,
+            aws_region):
+        """Checks that SQS queue has a custom retention period set of 3 days."""
 
         broker_ref = "new_content"
 
