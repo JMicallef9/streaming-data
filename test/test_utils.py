@@ -458,12 +458,16 @@ class TestPublishDataToMessageBroker:
         for item in test_data:
             assert item in received_messages
 
-    def test_publishes_new_messages_to_existing_queue(self, sqs_mock, test_data, aws_region):
-        """Checks whether new messages are successfully published to a queue that already contains messages."""
+    def test_publishes_new_messages_to_existing_queue(
+            self,
+            sqs_mock,
+            test_data,
+            aws_region):
+        """Checks whether new messages are published to existing queue."""
 
-        broker_reference = "guardian_content"
+        broker_ref = "guardian_content"
 
-        publish_data_to_message_broker(test_data, broker_reference)
+        publish_data_to_message_broker(test_data, broker_ref)
 
         new_data = [
             {
@@ -490,31 +494,42 @@ class TestPublishDataToMessageBroker:
                 )
             }
         ]
-        
-        publish_data_to_message_broker(new_data, broker_reference)
+    
+        publish_data_to_message_broker(new_data, broker_ref)
 
-        queue_url = sqs_mock.get_queue_url(QueueName=broker_reference)['QueueUrl']
+        queue_url = sqs_mock.get_queue_url(QueueName=broker_ref)['QueueUrl']
 
-        response = sqs_mock.receive_message(QueueUrl=queue_url, MaxNumberOfMessages=4)
+        response = sqs_mock.receive_message(
+            QueueUrl=queue_url,
+            MaxNumberOfMessages=4)
 
-        received_messages = [json.loads(message['Body']) for message in response['Messages']]
+        received_messages = [
+            json.loads(message['Body']) for message in response['Messages']
+            ]
 
         for item in received_messages:
             assert item in test_data or item in new_data
 
-
-    def test_publishes_messages_to_new_queue(self, sqs_mock, test_data, aws_region):
+    def test_publishes_messages_to_new_queue(
+            self,
+            sqs_mock,
+            test_data,
+            aws_region):
         """Checks messages are successfully published to new queue."""
 
-        broker_reference = "new_content"
+        broker_ref = "new_content"
 
-        publish_data_to_message_broker(test_data, broker_reference)
+        publish_data_to_message_broker(test_data, broker_ref)
 
-        queue_url = sqs_mock.get_queue_url(QueueName=broker_reference)['QueueUrl']
+        queue_url = sqs_mock.get_queue_url(QueueName=broker_ref)['QueueUrl']
 
-        response = sqs_mock.receive_message(QueueUrl=queue_url, MaxNumberOfMessages=2)
+        response = sqs_mock.receive_message(
+            QueueUrl=queue_url,
+            MaxNumberOfMessages=2)
 
-        received_messages = [json.loads(message['Body']) for message in response['Messages']]
+        received_messages = [
+            json.loads(message['Body']) for message in response['Messages']
+            ]
 
         for item in received_messages:
             assert item in test_data
@@ -557,14 +572,16 @@ class TestPublishDataToMessageBroker:
     def test_queue_created_with_correct_retention_period(self, test_data, sqs_mock, aws_region):
         """Checks that the SQS queue has a custom retention period set of 3 days."""
 
-        broker_reference = "new_content"
+        broker_ref = "new_content"
 
-        publish_data_to_message_broker(test_data, broker_reference)
+        publish_data_to_message_broker(test_data, broker_ref)
 
-        queue_url = sqs_mock.get_queue_url(QueueName=broker_reference)['QueueUrl']
+        queue_url = sqs_mock.get_queue_url(QueueName=broker_ref)['QueueUrl']
 
-        attributes = sqs_mock.get_queue_attributes(QueueUrl=queue_url,
-                                                   AttributeNames=["All"])["Attributes"]
+        attributes = sqs_mock.get_queue_attributes(
+            QueueUrl=queue_url,
+            AttributeNames=["All"]
+            )["Attributes"]
         
         assert attributes['MessageRetentionPeriod'] == "259200"
 
@@ -584,8 +601,9 @@ class TestCheckBucketExists:
     @patch.dict(os.environ, {'BUCKET_NAME': 'guardian-api-call-tracker'})
     def test_returns_true_if_bucket_exists(self, s3_mock):
         """Checks that the function returns True if the S3 bucket exists."""
-        s3_mock.create_bucket(Bucket=os.getenv('BUCKET_NAME'),
-                              CreateBucketConfiguration={'LocationConstraint': 'eu-west-2'})
+        s3_mock.create_bucket(
+            Bucket=os.getenv('BUCKET_NAME'),
+            CreateBucketConfiguration={'LocationConstraint': 'eu-west-2'})
         
         assert check_bucket_exists() == True
     
@@ -594,9 +612,8 @@ class TestCheckBucketExists:
         """Checks that the function returns False if S3 bucket does not exist."""
         assert check_bucket_exists() == False
 
-
     def test_returns_error_message_if_bucket_name_not_provided(self, s3_mock):
-        """Checks that an error message is received if bucket name not set in environment."""
+        """Checks error message is received if bucket name not set."""
         with pytest.raises(ValueError) as err:
             check_bucket_exists()
         assert str(err.value) == "Error: S3 bucket name (BUCKET_NAME) has not been set."
@@ -617,7 +634,7 @@ class TestCreateS3Bucket:
     
     @patch.dict(os.environ, {'BUCKET_NAME': 'guardian-api-call-tracker'})
     def test_bucket_name_matches_environment_variable_name(self, s3_mock):
-        """Checks that the bucket name of the created bucket matches the environment variable."""
+        """Checks bucket name matches the environment variable."""
         create_s3_bucket()
         response = s3_mock.head_bucket(Bucket='guardian-api-call-tracker')
         assert response['ResponseMetadata']['HTTPStatusCode'] == 200
@@ -638,7 +655,10 @@ class TestCreateS3Bucket:
 
     @patch.dict(os.environ, {'BUCKET_NAME': 'a...'})
     @patch("boto3.client")
-    def test_error_message_received_if_bucket_name_is_invalid(self, mock_boto_client, s3_mock):
+    def test_error_message_received_if_bucket_name_is_invalid(
+        self,
+        mock_boto_client,
+        s3_mock):
         """Checks that an error is raised if the bucket name breaches S3 rules."""
         mock_client = mock_boto_client.return_value
         mock_client.create_bucket.side_effect = ClientError(error_response={'Error': {
@@ -663,13 +683,26 @@ class TestCheckNumberOfFiles:
 
 
     def test_returns_zero_if_no_valid_folder_exists(self, s3_mock):
-        """Checks that zero is returned if there is no folder for today's date in the S3 bucket."""
+        """Checks zero is returned if today's folder not in S3 bucket."""
         bucket_name = 'guardian-api-call-tracker'
         s3_mock.create_bucket(Bucket=bucket_name,
                               CreateBucketConfiguration={'LocationConstraint': 'eu-west-2'})
-        test_data = json.dumps([{"webPublicationDate": "2023-11-21T11:11:31Z",
-                      "webTitle": "Who said what: using machine learning to correctly attribute quotes",
-                      "webUrl": "https://www.theguardian.com/info/2023/nov/21/who-said-what-using-machine-learning-to-correctly-attribute-quotes"}])
+        test_data = json.dumps(
+            [
+                {
+                    "webPublicationDate": "2023-11-21T11:11:31Z",
+                    "webTitle": (
+                        "Who said what: using machine learning to"
+                        "correctly attribute quotes"
+                    ),
+                    "webUrl": (
+                        "https://www.theguardian.com/info/2023/nov/"
+                        "21/who-said-what-using-machine-learning-to-"
+                        "correctly-attribute-quotes"
+                    )
+                }
+            ]
+        )
         s3_mock.put_object(Bucket=bucket_name,
                            Body=test_data,
                            Key='filename')
@@ -681,9 +714,22 @@ class TestCheckNumberOfFiles:
         bucket_name = 'guardian-api-call-tracker'
         s3_mock.create_bucket(Bucket=bucket_name,
                               CreateBucketConfiguration={'LocationConstraint': 'eu-west-2'})
-        test_data = json.dumps([{"webPublicationDate": "2023-11-21T11:11:31Z",
-                      "webTitle": "Who said what: using machine learning to correctly attribute quotes",
-                      "webUrl": "https://www.theguardian.com/info/2023/nov/21/who-said-what-using-machine-learning-to-correctly-attribute-quotes"}])
+        test_data = json.dumps(
+            [
+                {
+                    "webPublicationDate": "2023-11-21T11:11:31Z",
+                    "webTitle": (
+                        "Who said what: using machine learning to"
+                        "correctly attribute quotes"
+                    ),
+                    "webUrl": (
+                        "https://www.theguardian.com/info/2023/nov/"
+                        "21/who-said-what-using-machine-learning-to-"
+                        "correctly-attribute-quotes"
+                    )
+                }
+            ]
+        )
         date = str(datetime.date.today())
 
         s3_mock.put_object(Bucket=bucket_name,
@@ -696,9 +742,22 @@ class TestCheckNumberOfFiles:
         bucket_name = 'guardian-api-call-tracker'
         s3_mock.create_bucket(Bucket=bucket_name,
                               CreateBucketConfiguration={'LocationConstraint': 'eu-west-2'})
-        test_data = json.dumps([{"webPublicationDate": "2023-11-21T11:11:31Z",
-                      "webTitle": "Who said what: using machine learning to correctly attribute quotes",
-                      "webUrl": "https://www.theguardian.com/info/2023/nov/21/who-said-what-using-machine-learning-to-correctly-attribute-quotes"}])
+        test_data = json.dumps(
+            [
+                {
+                    "webPublicationDate": "2023-11-21T11:11:31Z",
+                    "webTitle": (
+                        "Who said what: using machine learning to"
+                        "correctly attribute quotes"
+                    ),
+                    "webUrl": (
+                        "https://www.theguardian.com/info/2023/nov/"
+                        "21/who-said-what-using-machine-learning-to-"
+                        "correctly-attribute-quotes"
+                    )
+                }
+            ]
+        )
         date = str(datetime.date.today())
 
         for i in range(20):
