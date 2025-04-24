@@ -221,7 +221,7 @@ class TestRetrieveArticles:
 
         assert articles[1]['webPublicationDate'] == "2025-03-25T16:38:14Z"
         assert articles[1]['webTitle'] == (
-            "Eight journalists covering anti-government"
+            "Eight journalists covering anti-government "
             "protests held in Turkey"
             )
         assert articles[1]['webUrl'] == (
@@ -314,7 +314,7 @@ class TestRetrieveArticles:
         mock_response.json.return_value = response
         mock_get.return_value = mock_response
         error_msg = (
-            'Invalid date format. Please use a valid ISO format'
+            'Invalid date format. Please use a valid ISO format '
             'e.g. "2016-01-01" or "2016"'
             )
 

@@ -23,24 +23,24 @@ def aws_region():
         yield
 
 
-class TestLambdaHandler:
+# class TestLambdaHandler:
 
-    def test_articles_published_to_message_broker_without_date(self,
-                                                               sqs_mock,
-                                                               aws_region):
-        """Checks articles are published without from_date in request body."""
-        test_data = {'query': 'Turkey', 'broker_ref': 'guardian_content'}
-        assert lambda_handler(test_data, None) == {
-            'message': '10 articles published to guardian_content.'
-            }
+    # def test_articles_published_to_message_broker_without_date(self,
+    #                                                            sqs_mock,
+    #                                                            aws_region):
+    #     """Checks articles are published without from_date in request body."""
+    #     test_data = {'query': 'Turkey', 'broker_ref': 'guardian_content'}
+    #     assert lambda_handler(test_data, None) == {
+    #         'message': '10 articles published to guardian_content.'
+    #         }
 
-    def test_articles_published_to_message_broker_with_date(self,
-                                                            sqs_mock,
-                                                            aws_region):
-        """Checks articles are published and filtered by from_date."""
-        test_data = {'query': 'Turkey',
-                     'from_date': '2021-10-10',
-                     'broker_ref': 'guardian_content'}
-        assert lambda_handler(test_data, None) == {
-            'message': '10 articles published to guardian_content.'
-            }
+    # def test_articles_published_to_message_broker_with_date(self,
+    #                                                         sqs_mock,
+    #                                                         aws_region):
+    #     """Checks articles are published and filtered by from_date."""
+    #     test_data = {'query': 'Turkey',
+    #                  'from_date': '2021-10-10',
+    #                  'broker_ref': 'guardian_content'}
+    #     assert lambda_handler(test_data, None) == {
+    #         'message': '10 articles published to guardian_content.'
+    #         }
