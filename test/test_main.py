@@ -12,12 +12,10 @@ import datetime
 def environ_vars():
     """Sets environment variables for integration testing."""
     with patch.dict(
-        os.environ, {
-        "BUCKET_NAME": 'test_bucket',
-        "API_KEY": 'test_key',
-        "AWS_REGION": 'eu-west-2'
-        }
-        ):
+        os.environ, {"BUCKET_NAME": 'test_bucket',
+                     "API_KEY": 'test_key',
+                     "AWS_REGION": 'eu-west-2'}
+                    ):
         yield
 
 
@@ -150,6 +148,7 @@ def mock_get_request():
         }
         mock_get.return_value = mock_response
         yield mock_get
+
 
 @pytest.fixture
 def mock_retrieve_articles():
@@ -305,8 +304,11 @@ class TestLambdaHandler:
                 )
 
         assert lambda_handler(test_event, None) == {
-            'message': 'Rate limit exceeded. No articles published to guardian_content.' }
-     
+            'message': (
+                'Rate limit exceeded. No articles published to guardian_content.'
+                )
+            }
+
     def test_retrieve_articles_called_without_from_date_field(
             self,
             s3_mock,
@@ -327,7 +329,7 @@ class TestLambdaHandler:
             test_event,
             mock_retrieve_articles,
             environ_vars):
-        """Checks that lambda handler calls retrieve_articles with from_date."""
+        """Checks lambda handler calls retrieve_articles with from_date."""
 
         test_event['from_date'] = '2025-01-01'
 
@@ -348,7 +350,9 @@ class TestLambdaHandler:
 
         with pytest.raises(ValueError) as err:
             lambda_handler(query_event, None)
-        assert str(err.value) == "Error: required field 'broker_ref' is missing."
+        assert str(err.value) == (
+            "Error: required field 'broker_ref' is missing."
+            )
 
         with pytest.raises(ValueError) as err:
             lambda_handler(broker_ref_event, None)
