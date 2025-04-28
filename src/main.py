@@ -33,6 +33,12 @@ def lambda_handler(event, context):
     from_date = event.get('from_date')
     broker_ref = event.get('broker_ref')
 
+    if not query:
+        raise ValueError("Error: required field 'query' is missing.")
+    
+    if not broker_ref:
+        raise ValueError("Error: required field 'broker_ref' is missing.")
+
     bucket_exists = check_bucket_exists()
 
     if not bucket_exists:
@@ -45,7 +51,7 @@ def lambda_handler(event, context):
     if call_count >= 50:
         return {
             'message':
-            f'Rate limit exceeded. No articles published to {broker_ref}'
+            f'Rate limit exceeded. No articles published to {broker_ref}.'
             }
 
     if from_date:
