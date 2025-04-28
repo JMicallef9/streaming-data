@@ -33,20 +33,21 @@ Up to 1 call per second
 
 
 
-<!-- Data should not be persisted in the message broker longer than three days. - I think default in SQS is 14 days??? -->
-AWS credentials
-python dotenv
-add ci/cd & yaml
-pep8
-integration testing & real API calls
+integration testing
 
-additional tests and error handling???
+additional tests and error handling for util functions
 
+- The complete size of the module should not exceed [the memory limits for Python Lambda dependencies](https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-package.html) - adding to Makefile to zip package for Lambda usage
 
 (optional: add other fields at your discretion)
 e.g. "content_preview" in the
 message that displays the first few lines of the article content, perhaps the first
 1000 characters or so.
 
-- The complete size of the module should not exceed [the memory limits for Python Lambda dependencies](https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-package.html)
+AWS credentials / python dotenv - check whether these are needed i.e. .env.example file and load dotenv vs using a different approach in deployment
+
+README
+
+invoice
+
 

@@ -35,7 +35,7 @@ def lambda_handler(event, context):
 
     if not query:
         raise ValueError("Error: required field 'query' is missing.")
-    
+
     if not broker_ref:
         raise ValueError("Error: required field 'broker_ref' is missing.")
 

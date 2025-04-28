@@ -11,11 +11,15 @@ import datetime
 @pytest.fixture
 def environ_vars():
     """Sets environment variables for integration testing."""
-    with patch.dict(os.environ, {
+    with patch.dict(
+        os.environ, {
         "BUCKET_NAME": 'test_bucket',
         "API_KEY": 'test_key',
-        "AWS_REGION": 'eu-west-2'}):
+        "AWS_REGION": 'eu-west-2'
+        }
+        ):
         yield
+
 
 @pytest.fixture
 def sqs_mock():
@@ -26,6 +30,7 @@ def sqs_mock():
         sqs.create_queue(QueueName="guardian_content")
         yield sqs
 
+
 @pytest.fixture
 def s3_mock():
     """Creates a mock S3 client."""
@@ -34,11 +39,13 @@ def s3_mock():
         s3 = boto3.client('s3', region_name='eu-west-2')
         yield s3
 
+
 @pytest.fixture
 def test_event():
     """Creates an event dictionary."""
     event = {"query": "turkey", "broker_ref": "guardian_content"}
     yield event
+
 
 @pytest.fixture
 def mock_get_request():
@@ -172,13 +179,13 @@ class TestLambdaHandler:
         assert lambda_handler(test_event, None) == {
             'message': '3 articles published to guardian_content.'
             }
-        
+
         # Assert S3 bucket was created and file saved
         assert len(s3_mock.list_buckets()['Buckets']) == 1
         response = s3_mock.head_bucket(Bucket='test_bucket')
         assert response['ResponseMetadata']['HTTPStatusCode'] == 200
         objects = s3_mock.list_objects_v2(Bucket='test_bucket')['Contents']
-        assert len(objects )== 1
+        assert len(objects) == 1
 
         # Assert file contents match expected articles
         key = objects[0]['Key']
@@ -198,7 +205,9 @@ class TestLambdaHandler:
         assert articles[0]["webPublicationDate"] == "2025-03-27T18:18:12Z"
 
         # Assert messages published to SQS
-        queue_url = sqs_mock.get_queue_url(QueueName='guardian_content')['QueueUrl']
+        queue_url = sqs_mock.get_queue_url(
+            QueueName='guardian_content'
+            )['QueueUrl']
 
         response = sqs_mock.receive_message(
             QueueUrl=queue_url,
@@ -209,12 +218,12 @@ class TestLambdaHandler:
         received_messages = [
             json.loads(message['Body']) for message in response['Messages']
             ]
-        
+
         assert any(message['webTitle'] == (
                             "BBC reporter arrested and deported from "
                             "Turkey after covering protests"
                         ) for message in received_messages)
-        
+
     def test_saves_file_to_existing_bucket(
             self,
             s3_mock,
@@ -222,19 +231,19 @@ class TestLambdaHandler:
             test_event,
             mock_get_request,
             environ_vars):
-        """Checks that file is saved to existing S3 bucket and published to SQS."""
+        """Checks file is saved to existing S3 bucket and published to SQS."""
 
         s3_mock.create_bucket(
             Bucket=os.getenv('BUCKET_NAME'),
             CreateBucketConfiguration={'LocationConstraint': 'eu-west-2'})
-        
+
         assert lambda_handler(test_event, None) == {
             'message': '3 articles published to guardian_content.'
             }
-        
+
         # Assert file was saved to S3 bucket
         objects = s3_mock.list_objects_v2(Bucket='test_bucket')['Contents']
-        assert len(objects )== 1
+        assert len(objects) == 1
 
         # Assert file contents match expected articles
         key = objects[0]['Key']
@@ -254,7 +263,9 @@ class TestLambdaHandler:
         assert articles[0]["webPublicationDate"] == "2025-03-27T18:18:12Z"
 
         # Assert messages published to SQS
-        queue_url = sqs_mock.get_queue_url(QueueName='guardian_content')['QueueUrl']
+        queue_url = sqs_mock.get_queue_url(
+            QueueName='guardian_content'
+            )['QueueUrl']
 
         response = sqs_mock.receive_message(
             QueueUrl=queue_url,
@@ -265,7 +276,7 @@ class TestLambdaHandler:
         received_messages = [
             json.loads(message['Body']) for message in response['Messages']
             ]
-        
+
         assert any(message['webTitle'] == (
                             "BBC reporter arrested and deported from "
                             "Turkey after covering protests"
@@ -287,9 +298,11 @@ class TestLambdaHandler:
             CreateBucketConfiguration={'LocationConstraint': 'eu-west-2'})
 
         for i in range(50):
-            s3_mock.put_object(Bucket=os.getenv("BUCKET_NAME"),
-                           Body=json.dumps({'test': 'data'}),
-                           Key=f'{date}/filename_{i}')
+            s3_mock.put_object(
+                Bucket=os.getenv("BUCKET_NAME"),
+                Body=json.dumps({'test': 'data'}),
+                Key=f'{date}/filename_{i}'
+                )
 
         assert lambda_handler(test_event, None) == {
             'message': 'Rate limit exceeded. No articles published to guardian_content.' }
@@ -301,7 +314,7 @@ class TestLambdaHandler:
             test_event,
             mock_retrieve_articles,
             environ_vars):
-        """Checks that lambda handler calls retrieve_articles without from_date."""
+        """Checks lambda handler calls retrieve_articles without from_date."""
 
         lambda_handler(test_event, None)
 
