@@ -305,7 +305,8 @@ class TestLambdaHandler:
 
         assert lambda_handler(test_event, None) == {
             'message': (
-                'Rate limit exceeded. No articles published to guardian_content.'
+                'Rate limit exceeded. '
+                'No articles published to guardian_content.'
                 )
             }
 
