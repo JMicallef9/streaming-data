@@ -40,13 +40,13 @@ This will create a lambda.zip file containing the code and its associated depend
 
 The lambda.zip file can then be deployed using one of the following methods:
 
-# Option 1: via the AWS Console
+### Option 1: via the AWS Console
 
 1. In the AWS Console, create a new Lambda function (or use an existing one).
 2. Under "Code source", select "Upload from .zip file" and then upload the newly created "lambda.zip" file.
 3. Select src.main.lambda_handler as the handler name.
 
-# Option 2: via Terraform
+### Option 2: via Terraform
 
 1. Create an 'aws_lambda_function' resource.
 2. Set the filename as 'lambda.zip'.
