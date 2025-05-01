@@ -7,7 +7,10 @@ from src.utils import (
     save_file_to_s3)
 import time
 import os
+from dotenv import load_dotenv
 
+
+load_dotenv()
 
 def lambda_handler(event, context):
     """
