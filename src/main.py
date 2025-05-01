@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
 def lambda_handler(event, context):
     """
     Retrieves articles from The Guardian API and publishes them to SQS
