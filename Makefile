@@ -58,3 +58,12 @@ unit-test:
 
 ## Run all checks
 run-checks: run-bandit run-flake8 unit-test
+
+## Create Lambda package
+lambda-package:
+	rm -rf package lambda.zip
+	$(call execute_in_env, $(PIP) install --upgrade -r requirements.txt --target package/)
+	cp -r src/ package/
+	cd package && zip -r ../lambda.zip .
+	rm -rf package
+	@echo "Lambda package created: lambda.zip"

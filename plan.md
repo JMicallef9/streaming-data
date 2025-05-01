@@ -31,10 +31,6 @@ Up to 1 call per second
 
 
 
-
-
-integration testing
-
 additional tests and error handling for util functions
 
 - The complete size of the module should not exceed [the memory limits for Python Lambda dependencies](https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-package.html) - adding to Makefile to zip package for Lambda usage
