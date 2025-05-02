@@ -51,11 +51,16 @@ def retrieve_articles(query, from_date=None):
     articles = []
 
     for item in result:
+        url = item['webUrl']
+        preview_text = extract_text_from_url(url)
+
         updated_item = {
             "webPublicationDate": item['webPublicationDate'],
             "webTitle": item['webTitle'],
-            "webUrl": item['webUrl']
+            "webUrl": item['webUrl'],
+            "content_preview": preview_text
             }
+        
         articles.append(updated_item)
 
     return articles
