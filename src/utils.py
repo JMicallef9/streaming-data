@@ -4,6 +4,7 @@ import os
 import boto3
 import botocore
 from datetime import date, datetime
+from bs4 import BeautifulSoup
 
 
 def retrieve_articles(query, from_date=None):
@@ -212,3 +213,25 @@ def save_file_to_s3(data, bucket_name):
     client.put_object(Bucket=bucket_name,
                       Body=json.dumps(data),
                       Key=f'{today_date}/{timestamp}')
+
+def extract_text_from_url(web_url):
+    """
+    Extracts the first 1000 characters of text from a URL.
+
+    Args:
+        web_url (str): The URL containing the text to extract.
+    
+    Returns:
+        str: The first 1000 characters of content from the URL.
+    """
+    try:
+        response = requests.get(web_url)
+        text = BeautifulSoup(response.text, "html.parser")
+
+        body_text = text.find("div", {"data-gu-name": "body"})
+        paragraphs = body_text.find_all("p")
+        chars = " ".join(paragraph.get_text() for paragraph in paragraphs)
+        return chars[:1000]
+    except:
+        raise ValueError("Text extraction failed. URL may be invalid.")
+
