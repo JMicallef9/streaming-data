@@ -23,8 +23,8 @@ from botocore.exceptions import ClientError
 def mock_get_request():
     """Creates a test response body."""
     with patch("requests.get") as mock_get:
-        mock_response = Mock()
-        mock_response.json.return_value = {
+        first_response = Mock()
+        first_response.json.return_value = {
             "response": {
                 "status": "ok",
                 "userTier": "developer",
@@ -120,7 +120,17 @@ def mock_get_request():
                 ]
             }
         }
-        mock_get.return_value = mock_response
+
+        second_response = Mock()
+        html = """<html><body>
+        <div data-gu-name="body">
+        <p>The BBC correspondent Mark Lowen has been arrested</p>
+        <p>second paragraph</p>
+        </div>
+        </body></html>
+        """
+        second_response.text = html
+        mock_get.side_effect = [first_response, second_response, second_response, second_response]
         yield mock_get
 
 
@@ -174,6 +184,7 @@ class TestRetrieveArticles:
             test_api_key):
         """Ensures that a list of the correct length is returned."""
         assert len(retrieve_articles("test")) == 3
+        assert mock_get_request.call_count == 4
 
     def test_list_items_contain_correct_dictionary_keys(
             self,
@@ -185,7 +196,8 @@ class TestRetrieveArticles:
             assert list(article.keys()) == [
                 'webPublicationDate',
                 'webTitle',
-                'webUrl'
+                'webUrl',
+                'content_preview'
                 ]
 
     def test_list_items_contain_appropriate_values(
@@ -206,6 +218,10 @@ class TestRetrieveArticles:
             url = article['webUrl']
             url_pattern = r"^https://www.theguardian.com/"
             assert re.search(url_pattern, url)
+
+            preview = article['content_preview']
+            assert isinstance(preview, str)
+            assert preview.startswith('The BBC correspondent Mark Lowen has been arrested')
 
     def test_list_values_are_accurate(self, mock_get_request, test_api_key):
         """Uses test input to check correct information is returned."""
@@ -261,7 +277,8 @@ class TestRetrieveArticles:
             test_api_key):
         """Ensures that the order-by parameter is included in API requests."""
         retrieve_articles("turkey")
-        args, kwargs = mock_get_request.call_args
+        first_call_args = mock_get_request.call_args_list[0]
+        args, kwargs = first_call_args
         assert kwargs["params"]["order-by"] == 'newest'
 
     def test_request_includes_from_date_parameter(
@@ -270,7 +287,8 @@ class TestRetrieveArticles:
             test_api_key):
         """Ensures that date-from parameter is included in API requests."""
         retrieve_articles("magcon", "2016-01-01")
-        args, kwargs = mock_get_request.call_args
+        first_call_args = mock_get_request.call_args_list[0]
+        args, kwargs = first_call_args        
         assert kwargs["params"]["from-date"] == '2016-01-01'
 
     def test_from_date_omitted_from_request_if_not_provided(
@@ -280,7 +298,8 @@ class TestRetrieveArticles:
         """Ensures that date_from parameter is omitted if not provided."""
 
         retrieve_articles("magcon")
-        args, kwargs = mock_get_request.call_args
+        first_call_args = mock_get_request.call_args_list[0]
+        args, kwargs = first_call_args
         assert "from-date" not in list(kwargs["params"].keys())
 
     @patch("requests.get")
@@ -331,7 +350,8 @@ class TestRetrieveArticles:
         """Ensures that the function handles search terms of multiple words."""
         retrieve_articles("machine learning")
 
-        args, kwargs = mock_get_request.call_args
+        first_call_args = mock_get_request.call_args_list[0]
+        args, kwargs = first_call_args
         assert kwargs["params"]["q"] == 'machine learning'
 
     @patch("requests.get")
