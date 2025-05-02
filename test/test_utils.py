@@ -4,7 +4,8 @@ from src.utils import (
     check_bucket_exists,
     create_s3_bucket,
     check_number_of_files,
-    save_file_to_s3
+    save_file_to_s3,
+    extract_text_from_url
     )
 from unittest.mock import patch, Mock
 import json
@@ -888,3 +889,44 @@ class TestSaveFileToS3:
                 Bucket=bucket_name,
                 Key=f'{date}/mock_timestamp_{i}')['Body'].read()
             assert json.loads(response) == test_data
+
+@pytest.fixture
+def mock_url():
+    """Creates a test URL response body."""
+    with patch("requests.get") as mock_url:
+        mock_response = Mock()
+        html = """<html><body>
+        <div data-gu-name="body">
+        <p>The BBC correspondent Mark Lowen has been arrested</p>
+        <p>second paragraph</p>
+        </div>
+        </body></html>
+        """
+        mock_response.text = html
+        mock_url.return_value = mock_response
+        yield mock_url
+
+@pytest.fixture
+def mock_error():
+    """Mocks requests.get to raise an error."""
+    with patch("requests.get") as mock_error:
+        mock_error.side_effect = requests.exceptions.RequestException
+        yield mock_error
+
+class TestExtractTextFromUrl:
+    
+    """Tests for the extract_text_from_url function."""
+
+    def test_extracts_characters_from_url(self, mock_url):
+        """Checks whether the function extracts text successfully."""
+
+        output = extract_text_from_url("www.mock-url.com")
+        assert len(output) <= 1000
+        assert output.startswith("The BBC correspondent Mark Lowen has been arrested")
+    
+    def test_raises_error_if_invalid_link(self, mock_error):
+        """Checks whether error is raised if link is invalid."""
+
+        with pytest.raises(ValueError) as err:
+            extract_text_from_url("www.invalid-url.com")
+        assert str(err.value) == "Text extraction failed. URL may be invalid."
