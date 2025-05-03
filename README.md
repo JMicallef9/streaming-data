@@ -1,6 +1,14 @@
 # Streaming Data
 
-An application that retrieves articles from the [Guardian API](https://open-platform.theguardian.com/) and publishes them to an SQS queue on Amazon Web Services (AWS). 
+An application that retrieves articles from the [Guardian API](https://open-platform.theguardian.com/) and publishes them to an SQS queue on Amazon Web Services (AWS).
+
+Messages are published to SQS in the following JSON format:
+{
+    "webPublicationDate": "2023-11-21T11:11:31Z",
+    "webTitle": "Who said what: using machine learning to correctly attribute quotes",
+    "webUrl": "https://www.theguardian.com/info/2023/nov/21/who-said-what-using-machine-learning-to-correctly-attribute-quotes",
+    "contentPreview": "The first 1000 characters of the article..."
+}
 
 The application stores information about each run in an AWS S3 bucket. 
 
@@ -51,3 +59,21 @@ The lambda.zip file can then be deployed using one of the following methods:
 1. Create an 'aws_lambda_function' resource.
 2. Set the filename as 'lambda.zip'.
 3. Set the handler as 'src.main.lambda_handler'.
+
+## Triggering the application
+
+The 'event' that triggers execution of the Lambda function should be in the following format:
+
+{
+    "query": "search term",
+    "broker_ref": "SQS_queue_name",
+    "from_date": "2021-01-01" (optional)
+}
+
+The "query" is the search term that will be used to search for articles in the Guardian API. 
+
+The "broker_ref" field is the name of the target SQS queue. Note that this queue does not need to exist already; if it does not exist, it will automatically be created by the application.
+
+The "from_date" field allows optional filtering out of any results older than the given date. Dates should be provided in ISO 8601 format (as above) or as a simple year e.g. "2021". 
+
+The application will retrieve all content returned by the API and publish up to 10 most recent items in JSON format on to the message broker.
