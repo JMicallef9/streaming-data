@@ -49,8 +49,8 @@ def test_event():
 def mock_get_request():
     """Creates a test response body."""
     with patch("requests.get") as mock_get:
-        mock_response = Mock()
-        mock_response.json.return_value = {
+        first_response = Mock()
+        first_response.json.return_value = {
             "response": {
                 "status": "ok",
                 "userTier": "developer",
@@ -146,7 +146,19 @@ def mock_get_request():
                 ]
             }
         }
-        mock_get.return_value = mock_response
+
+        second_response = Mock()
+        html = """<html><body>
+        <div data-gu-name="body">
+        <p>The BBC correspondent Mark Lowen has been arrested</p>
+        <p>second paragraph</p>
+        </div>
+        </body></html>
+        """
+        second_response.text = html
+        mock_get.side_effect = [
+            first_response, second_response, second_response, second_response
+            ]
         yield mock_get
 
 
