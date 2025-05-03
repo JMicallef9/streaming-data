@@ -67,3 +67,5 @@ lambda-package:
 	cd package && zip -r ../lambda.zip .
 	rm -rf package
 	@echo "Lambda package created: lambda.zip"
+	@echo "Size of lambda.zip:"
+	@du -h lambda.zip | cut -f1
