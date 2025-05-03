@@ -60,7 +60,7 @@ def retrieve_articles(query, from_date=None):
             "webUrl": item['webUrl'],
             "content_preview": preview_text
             }
-        
+
         articles.append(updated_item)
 
     return articles
@@ -219,13 +219,14 @@ def save_file_to_s3(data, bucket_name):
                       Body=json.dumps(data),
                       Key=f'{today_date}/{timestamp}')
 
+
 def extract_text_from_url(web_url):
     """
     Extracts the first 1000 characters of text from a URL.
 
     Args:
         web_url (str): The URL containing the text to extract.
-    
+
     Returns:
         str: The first 1000 characters of content from the URL.
     """
@@ -237,6 +238,7 @@ def extract_text_from_url(web_url):
         paragraphs = body_text.find_all("p")
         chars = " ".join(paragraph.get_text() for paragraph in paragraphs)
         return chars[:1000]
-    except:
+    except requests.RequestException:
         raise ValueError("Text extraction failed. URL may be invalid.")
-
+    except AttributeError:
+        raise ValueError("Text extraction failed. HTML structure may have changed.")
