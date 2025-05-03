@@ -230,7 +230,7 @@ def extract_text_from_url(web_url):
         str: The first 1000 characters of content from the URL.
     """
     try:
-        response = requests.get(web_url)
+        response = requests.get(web_url, timeout=10)
         text = BeautifulSoup(response.text, "html.parser")
 
         body_text = text.find("div", {"data-gu-name": "body"})
