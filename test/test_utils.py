@@ -130,7 +130,9 @@ def mock_get_request():
         </body></html>
         """
         second_response.text = html
-        mock_get.side_effect = [first_response, second_response, second_response, second_response]
+        mock_get.side_effect = [
+            first_response, second_response, second_response, second_response
+            ]
         yield mock_get
 
 
@@ -221,7 +223,9 @@ class TestRetrieveArticles:
 
             preview = article['content_preview']
             assert isinstance(preview, str)
-            assert preview.startswith('The BBC correspondent Mark Lowen has been arrested')
+            assert preview.startswith(
+                'The BBC correspondent Mark Lowen has been arrested'
+                )
 
     def test_list_values_are_accurate(self, mock_get_request, test_api_key):
         """Uses test input to check correct information is returned."""
@@ -288,7 +292,7 @@ class TestRetrieveArticles:
         """Ensures that date-from parameter is included in API requests."""
         retrieve_articles("magcon", "2016-01-01")
         first_call_args = mock_get_request.call_args_list[0]
-        args, kwargs = first_call_args        
+        args, kwargs = first_call_args
         assert kwargs["params"]["from-date"] == '2016-01-01'
 
     def test_from_date_omitted_from_request_if_not_provided(
@@ -910,6 +914,7 @@ class TestSaveFileToS3:
                 Key=f'{date}/mock_timestamp_{i}')['Body'].read()
             assert json.loads(response) == test_data
 
+
 @pytest.fixture
 def mock_url():
     """Creates a test URL response body."""
@@ -926,6 +931,7 @@ def mock_url():
         mock_url.return_value = mock_response
         yield mock_url
 
+
 @pytest.fixture
 def mock_error():
     """Mocks requests.get to raise an error."""
@@ -933,8 +939,25 @@ def mock_error():
         mock_error.side_effect = requests.exceptions.RequestException
         yield mock_error
 
+
+@pytest.fixture
+def mock_invalid_body():
+    """Creates an invalid response body."""
+    with patch("requests.get") as mock_url:
+        mock_response = Mock()
+        html = """<html><body>
+        <div>
+        <p>The BBC correspondent Mark Lowen has been arrested</p>
+        <p>second paragraph</p>
+        </div>
+        </body></html>
+        """
+        mock_response.text = html
+        mock_url.return_value = mock_response
+        yield mock_url
+
 class TestExtractTextFromUrl:
-    
+
     """Tests for the extract_text_from_url function."""
 
     def test_extracts_characters_from_url(self, mock_url):
@@ -942,11 +965,20 @@ class TestExtractTextFromUrl:
 
         output = extract_text_from_url("www.mock-url.com")
         assert len(output) <= 1000
-        assert output.startswith("The BBC correspondent Mark Lowen has been arrested")
-    
-    def test_raises_error_if_invalid_link(self, mock_error):
+        assert output.startswith(
+            "The BBC correspondent Mark Lowen has been arrested"
+            )
+
+    def test_raises_value_error_if_request_fails(self, mock_error):
         """Checks whether error is raised if link is invalid."""
 
         with pytest.raises(ValueError) as err:
             extract_text_from_url("www.invalid-url.com")
         assert str(err.value) == "Text extraction failed. URL may be invalid."
+    
+    def test_raises_value_error_if_incorrect_page_structure(self, mock_invalid_body):
+        """Checks whether error is raised if page structure is invalid."""
+
+        with pytest.raises(ValueError) as err:
+            extract_text_from_url("www.invalid-url.com")
+        assert str(err.value) == "Text extraction failed. HTML structure may have changed."
