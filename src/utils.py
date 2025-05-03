@@ -58,7 +58,7 @@ def retrieve_articles(query, from_date=None):
             "webPublicationDate": item['webPublicationDate'],
             "webTitle": item['webTitle'],
             "webUrl": item['webUrl'],
-            "content_preview": preview_text
+            "contentPreview": preview_text
             }
 
         articles.append(updated_item)
