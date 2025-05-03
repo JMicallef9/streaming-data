@@ -956,6 +956,7 @@ def mock_invalid_body():
         mock_url.return_value = mock_response
         yield mock_url
 
+
 class TestExtractTextFromUrl:
 
     """Tests for the extract_text_from_url function."""
@@ -975,10 +976,13 @@ class TestExtractTextFromUrl:
         with pytest.raises(ValueError) as err:
             extract_text_from_url("www.invalid-url.com")
         assert str(err.value) == "Text extraction failed. URL may be invalid."
-    
-    def test_raises_value_error_if_incorrect_page_structure(self, mock_invalid_body):
+
+    def test_raises_value_error_if_incorrect_page_structure(
+            self, mock_invalid_body):
         """Checks whether error is raised if page structure is invalid."""
 
         with pytest.raises(ValueError) as err:
             extract_text_from_url("www.invalid-url.com")
-        assert str(err.value) == "Text extraction failed. HTML structure may have changed."
+        assert str(err.value) == (
+            "Text extraction failed. HTML structure may have changed."
+            )

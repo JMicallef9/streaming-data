@@ -241,4 +241,6 @@ def extract_text_from_url(web_url):
     except requests.RequestException:
         raise ValueError("Text extraction failed. URL may be invalid.")
     except AttributeError:
-        raise ValueError("Text extraction failed. HTML structure may have changed.")
+        raise ValueError(
+            "Text extraction failed. HTML structure may have changed."
+            )

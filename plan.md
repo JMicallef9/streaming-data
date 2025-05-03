@@ -38,7 +38,6 @@ e.g. "content_preview" in the
 message that displays the first few lines of the article content, perhaps the first
 1000 characters or so.
 
-AWS credentials / python dotenv - check whether these are needed i.e. .env.example file and load dotenv vs using a different approach in deployment
 
 README
 
