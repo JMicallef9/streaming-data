@@ -199,7 +199,7 @@ class TestRetrieveArticles:
                 'webPublicationDate',
                 'webTitle',
                 'webUrl',
-                'content_preview'
+                'contentPreview'
                 ]
 
     def test_list_items_contain_appropriate_values(
@@ -221,7 +221,7 @@ class TestRetrieveArticles:
             url_pattern = r"^https://www.theguardian.com/"
             assert re.search(url_pattern, url)
 
-            preview = article['content_preview']
+            preview = article['contentPreview']
             assert isinstance(preview, str)
             assert preview.startswith(
                 'The BBC correspondent Mark Lowen has been arrested'
