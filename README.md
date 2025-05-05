@@ -12,7 +12,7 @@ Messages are published to SQS in the following JSON format:
 }
 ```
 
-The application stores information about each run in an AWS S3 bucket. 
+The application also stores information about each run in an AWS S3 bucket. 
 
 ## Requirements
 
@@ -30,19 +30,21 @@ The application requires the following environment variables to be set:
 - AWS_REGION: the region associated with your AWS account.
 - BUCKET_NAME: the name you wish to use for the S3 bucket that tracks uses of the application.
 
+## Running the application on the command line
+
 To run the application locally using the command line, follow these instructions:
 
-1. Copy the .env.example file into a .env file using the following command: cp .env.example .env
+1. Copy the .env.example file into a .env file using the following command: ```cp .env.example .env```
 2. Replace the template values in the .env file with the real environment variables.
 3. Run the application with the following command: python src/main.py
-
-To deploy the application via AWS Lambda, you will need to ensure that all of the environment variables are properly set e.g.
-- configure the environment variables manually in the Lambda section of the AWS console
-- or, if deploying via Terraform, use the 'environment' block in your 'aws_lambda_function' resource.
 
 ## Lambda deployment
 
 The application is packaged and ready to be used as an AWS Lambda function. 
+
+To deploy the application via AWS Lambda, you will need to ensure that all of the environment variables are properly set. You can do this in the following ways:
+- configure the environment variables manually in the Lambda section of the AWS console
+- or, if deploying via Terraform, use the 'environment' block in your 'aws_lambda_function' resource.
 
 To create the deployment package, first run the following command: make lambda-package
 
