@@ -3,12 +3,14 @@
 An application that retrieves articles from the [Guardian API](https://open-platform.theguardian.com/) and publishes them to an SQS queue on Amazon Web Services (AWS).
 
 Messages are published to SQS in the following JSON format:
+```json
 {
     "webPublicationDate": "2023-11-21T11:11:31Z",
     "webTitle": "Who said what: using machine learning to correctly attribute quotes",
     "webUrl": "https://www.theguardian.com/info/2023/nov/21/who-said-what-using-machine-learning-to-correctly-attribute-quotes",
     "contentPreview": "The first 1000 characters of the article..."
 }
+```
 
 The application stores information about each run in an AWS S3 bucket. 
 
