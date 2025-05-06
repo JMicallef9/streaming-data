@@ -28,21 +28,9 @@ The application requires the following environment variables to be set:
 - AWS_ACCESS_KEY_ID: the AWS access key associated with your AWS account.
 - AWS_SECRET_ACCESS_KEY: the AWS secret access key associated with your AWS account.
 - AWS_REGION: the region associated with your AWS account.
-- BUCKET_NAME: the name you wish to use for the S3 bucket that tracks uses of the application.
+- BUCKET_NAME: the name you wish to use for the S3 bucket that stores information about the messages retrieved.
 
-## Running the application on the command line
-
-To run the application locally using the command line, follow these instructions:
-
-1. Copy the .env.example file into a .env file using the following command: ```cp .env.example .env```
-2. Replace the template values in the .env file with the real environment variables.
-3. Run the application with the command ```python src/main.py``` followed by the required variables.
-
-The required variables are (in order): query (the search term), broker_ref (the name of the SQS queue), and from_date (an optional field for filtering by date).
-
-For example, the command ```python src/main.py london my-sqs-queue``` will trigger the application to search the Guardian API for articles related to London, publishing them to the SQS queue with the name 'my-sqs-queue'.
-
-The from_date can be passed as an additional argument e.g. ```python src/main.py london my-sqs-queue 2025-01-01``` will filter out any articles from before 2025.
+For the purposes of testing locally, a .env.example file has been provided with a template for these environment variables.
 
 ## Lambda deployment
 
@@ -52,9 +40,9 @@ To deploy the application via AWS Lambda, you will need to ensure that all of th
 - configure the environment variables manually in the Lambda section of the AWS console
 - or, if deploying via Terraform, use the 'environment' block in your 'aws_lambda_function' resource.
 
-To create the deployment package, first run the following command: make lambda-package
+To create the deployment package, first run the following command: ```make lambda-package```
 
-This will create a lambda.zip file containing the code and its associated dependencies. This lambda.zip file is within the memory limits for Python Lambda dependencies.
+This will create a lambda.zip file containing the code and its associated dependencies. At ~35MB, this lambda.zip file is within the memory limits for Python Lambda dependencies.
 
 The lambda.zip file can then be deployed using one of the following methods:
 
@@ -74,11 +62,13 @@ The lambda.zip file can then be deployed using one of the following methods:
 
 The 'event' that triggers execution of the Lambda function should be in the following format:
 
+```
 {
     "query": "search term",
     "broker_ref": "SQS_queue_name",
     "from_date": "2021-01-01" (optional)
 }
+```
 
 The "query" is the search term that will be used to search for articles in the Guardian API. 
 
@@ -87,3 +77,19 @@ The "broker_ref" field is the name of the target SQS queue. Note that this queue
 The "from_date" field allows optional filtering out of any results older than the given date. Dates should be provided in ISO 8601 format (as above) or as a simple year e.g. "2021". 
 
 The application will retrieve all content returned by the API and publish up to 10 most recent items in JSON format on to the message broker.
+
+## Running the application on the command line
+
+While the application is intended to be used via AWS Lambda, it is possible to test it locally.
+
+To test the application by running it locally using the command line, follow these instructions:
+
+1. Copy the .env.example file into a .env file using the following command: ```cp .env.example .env```
+2. Replace the template values in the .env file with the real environment variables.
+3. Run the application with the command ```python src/main.py``` followed by the required variables.
+
+The required variables are (in order): query (the search term), broker_ref (the name of the SQS queue), and from_date (an optional field for filtering by date).
+
+For example, the command ```python src/main.py london my-sqs-queue``` will trigger the application to search the Guardian API for articles related to London, publishing them to the SQS queue with the name 'my-sqs-queue'.
+
+The from_date field can be passed as an additional argument e.g. ```python src/main.py london my-sqs-queue 2025-01-01``` will filter out any articles from before 2025.
