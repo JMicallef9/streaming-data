@@ -73,7 +73,7 @@ def lambda_handler(event, context):
     return {'message': f'{count} articles published to {broker_ref}.'}
 
 
-if __name__ == '__main__':
+if __name__ == '__main__': # pragma: no cover
     args = sys.argv[1:]
 
     if len(args) < 2:
