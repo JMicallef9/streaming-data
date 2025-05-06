@@ -40,9 +40,9 @@ To run the application locally using the command line, follow these instructions
 
 The required variables are (in order): query (the search term), broker_ref (the name of the SQS queue), and from_date (an optional field for filtering by date).
 
-For example, the command ```python src/main.py "london" "my-sqs-queue"``` will trigger the application to search the Guardian API for articles related to London, publishing them to the SQS queue with the name 'my-sqs-queue'.
+For example, the command ```python src/main.py london my-sqs-queue``` will trigger the application to search the Guardian API for articles related to London, publishing them to the SQS queue with the name 'my-sqs-queue'.
 
-The from_date can be passed as an additional argument e.g. ```python src/main.py "london" "my-sqs-queue" "2025-01-01"``` will filter out any articles from before 2025.
+The from_date can be passed as an additional argument e.g. ```python src/main.py london my-sqs-queue 2025-01-01``` will filter out any articles from before 2025.
 
 ## Lambda deployment
 
