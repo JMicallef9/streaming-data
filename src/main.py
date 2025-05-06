@@ -8,6 +8,7 @@ from src.utils import (
 import time
 import os
 from dotenv import load_dotenv
+import sys
 
 
 load_dotenv()
@@ -22,10 +23,10 @@ def lambda_handler(event, context):
         event (dict): The event payload that triggers the Lambda function.
         Includes the following keys:
             - query (str): The search term used in the query to the API.
-            - from_date (str, optional): A date used to filter the results
-            (ideally in ISO 8601 format e.g. "2021-01-01")
             - broker_ref (str): The name of the SQS queue
             that articles should be published to.
+            - from_date (str, optional): A date used to filter the results
+            (ideally in ISO 8601 format e.g. "2021-01-01")
 
         context (object): Context of the Lambda execution.
 
@@ -34,8 +35,8 @@ def lambda_handler(event, context):
         number of articles published.
     """
     query = event.get('query')
-    from_date = event.get('from_date')
     broker_ref = event.get('broker_ref')
+    from_date = event.get('from_date')
 
     if not query:
         raise ValueError("Error: required field 'query' is missing.")
@@ -73,4 +74,25 @@ def lambda_handler(event, context):
 
 
 if __name__ == '__main__':
-    lambda_handler()
+    args = sys.argv[1:]
+
+    if len(args) < 2:
+        print(
+            "Error. Arguments should be provided as follows: "
+            "python src/main.py <query> <broker_ref> (from_date)"
+            )
+        sys.exit()
+
+    query = args[0]
+    broker_ref = args[1]
+    from_date = args[2] if len(args) >= 3 else None
+
+    event = {
+        "query": query,
+        "broker_ref": broker_ref
+    }
+
+    if from_date:
+        event["from_date"] = from_date
+
+    lambda_handler(event, context=None)
