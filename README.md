@@ -36,7 +36,13 @@ To run the application locally using the command line, follow these instructions
 
 1. Copy the .env.example file into a .env file using the following command: ```cp .env.example .env```
 2. Replace the template values in the .env file with the real environment variables.
-3. Run the application with the following command: python src/main.py
+3. Run the application with the command ```python src/main.py``` followed by the required variables.
+
+The required variables are (in order): query (the search term), broker_ref (the name of the SQS queue), and from_date (an optional field for filtering by date).
+
+For example, the command ```python src/main.py "london" "my-sqs-queue"``` will trigger the application to search the Guardian API for articles related to London, publishing them to the SQS queue with the name 'my-sqs-queue'.
+
+The from_date can be passed as an additional argument e.g. ```python src/main.py "london" "my-sqs-queue" "2025-01-01"``` will filter out any articles from before 2025.
 
 ## Lambda deployment
 
