@@ -12,7 +12,7 @@ Messages are published to SQS in the following JSON format:
 }
 ```
 
-The application also stores information about each run in an AWS S3 bucket. 
+The application also stores information about each run in an AWS S3 bucket.
 
 ## Requirements
 
